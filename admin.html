@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quản Trị Giáo Viên - Hệ Thống Trắc Nghiệm</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+    <style>
+        /* ========================================= */
+        /* RESET & VARIABLES                         */
+        /* ========================================= */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #4F46E5; --primary-hover: #4338CA;
+            --secondary: #64748B; --success: #10B981;
+            --danger: #EF4444; --warning: #F59E0B;
+            --background: #F8FAFC; --surface: #FFFFFF;
+            --text-main: #0F172A; --text-muted: #475569;
+            --border: #E2E8F0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: var(--background);
+            min-height: 100vh; padding: 25px 15px; color: var(--text-main); 
+            position: relative; overflow-x: hidden;
+        }
+
+        body::before, body::after {
+            content: ''; position: fixed; border-radius: 50%; filter: blur(120px); z-index: -1;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        body::before { width: 40vw; height: 40vw; max-width: 500px; background: rgba(99, 102, 241, 0.12); top: -10%; left: -5%; }
+        body::after { width: 30vw; height: 30vw; max-width: 400px; background: rgba(16, 185, 129, 0.1); bottom: 10%; right: -5%; animation-delay: -5s; }
+
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 40px) scale(1.1); } }
+
+        /* ========================================= */
+        /* LAYOUT & NAVBAR                           */
+        /* ========================================= */
+        .navbar { 
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            padding: 16px 32px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05); border: 1px solid rgba(255, 255, 255, 1);
+            max-width: 1080px; margin: 0 auto 30px auto; 
+        }
+        .user-info { font-weight: 800; color: var(--primary); font-size: 18px; letter-spacing: -0.3px;}
+        .btn-logout { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; padding: 10px 24px; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; }
+        .btn-logout:hover { background: var(--danger); color: white; transform: translateY(-2px); }
+
+        .admin-container { 
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); padding: 40px; border-radius: 32px; 
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08); max-width: 1080px; margin: 0 auto; border: 1px solid rgba(255, 255, 255, 0.8); 
+        }
+
+        h2 { margin-bottom: 28px; font-weight: 800; font-size: 26px; color: var(--text-main); letter-spacing: -0.5px;}
+
+        /* ========================================= */
+        /* TABS MENU                                 */
+        /* ========================================= */
+        .tabs { display: flex; background: #F1F5F9; padding: 6px; border-radius: 20px; margin-bottom: 35px; gap: 6px; }
+        .tab-btn { flex: 1; padding: 14px; border: none; background: transparent; border-radius: 16px; font-size: 15px; font-weight: 700; color: var(--secondary); cursor: pointer; transition: 0.3s; }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active { background: var(--surface); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02); }
+        .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Nút Tab dành riêng cho Super Admin */
+        #tabBtnAdminUsers { display: none; background: #FFFBEB; color: #D97706; }
+        #tabBtnAdminUsers.active { background: #F59E0B; color: white; }
+
+        /* ========================================= */
+        /* FORM TẠO BÀI THI                          */
+        /* ========================================= */
+        .instruction-box { background: #EEF2FF; border-left: 4px solid var(--primary); padding: 18px 24px; border-radius: 16px; margin-bottom: 25px; font-size: 14.5px; color: #3730A3; line-height: 1.6; }
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; font-weight: 700; margin-bottom: 10px; margin-left: 4px; color: #334155;}
+        .form-input { width: 100%; padding: 16px 20px; border: 2px solid var(--border); border-radius: 16px; background: var(--background); font-size: 15px; transition: 0.3s; color: var(--text-main); font-family: inherit; font-weight: 500; }
+        .form-input::placeholder { color: #94A3B8; font-weight: 400; }
+        .form-input:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); }
+        textarea.form-input { min-height: 280px; resize: vertical; line-height: 1.6; }
+        .row { display: flex; gap: 24px; } .col { flex: 1; }
+        .btn-create { width: 100%; padding: 18px; background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); color: white; border: none; border-radius: 18px; font-size: 17px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px -10px rgba(79, 70, 229, 0.6); }
+        .btn-create:hover { transform: translateY(-3px); box-shadow: 0 15px 25px -10px rgba(79, 70, 229, 0.7); }
+
+        .import-group { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn-import { flex: 1; padding: 14px 20px; border: none; border-radius: 14px; font-weight: 700; font-size: 14.5px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 160px; transition: 0.2s; }
+        .btn-import-excel { background: var(--success); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .btn-import-word { background: #3B82F6; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2); }
+        .btn-import-sample { background: #F1F5F9; color: var(--text-muted); border: 1px solid #CBD5E1; }
+        .btn-import-excel:hover, .btn-import-word:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .btn-import-sample:hover { background: #E2E8F0; }
+
+        /* ========================================= */
+        /* QUẢN LÝ PHÒNG THI (Cards)                 */
+        /* ========================================= */
+        .exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 24px; }
+        .exam-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); transition: 0.3s; display: flex; flex-direction: column; }
+        .exam-card:hover { transform: translateY(-5px); box-shadow: 0 15px 25px -5px rgba(0,0,0,0.05); border-color: #C7D2FE; }
+        .exam-card h3 { color: var(--text-main); margin-bottom: 12px; font-size: 18px; line-height: 1.4; flex-grow: 1;}
+        .exam-info { font-size: 14px; color: var(--secondary); margin-bottom: 18px; line-height: 1.8; font-weight: 500;}
+        .room-code { font-size: 26px; font-weight: 900; color: var(--danger); letter-spacing: 6px; text-align: center; background: #FEF2F2; padding: 12px; border-radius: 16px; margin-bottom: 18px; border: 1px dashed #FCA5A5; }
+        .badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;}
+        .badge-active { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;}
+        .badge-closed { background: #F1F5F9; color: var(--secondary); border: 1px solid #CBD5E1;}
+        
+        .card-actions { display: flex; flex-direction: column; gap: 8px; }
+        .btn-sm { width: 100%; padding: 12px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; color: white; display: flex; justify-content: center; align-items: center; gap: 5px;}
+        .btn-scores { background: var(--background); color: var(--primary); border: 1px solid #E0E7FF; } 
+        .btn-scores:hover { background: #EEF2FF; border-color: #C7D2FE; }
+        .btn-close { background: #FFFBEB; color: #D97706; border: 1px solid #FEF3C7; } 
+        .btn-close:hover { background: #FEF3C7; }
+        .btn-open { background: #EFF6FF; color: #2563EB; border: 1px solid #DBEAFE; } 
+        .btn-open:hover { background: #DBEAFE; }
+        
+        .btn-group-sm { display: flex; gap: 8px; }
+        .btn-export { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+        .btn-export:hover { background: #D1FAE5; color: #065F46; }
+        .btn-delete { background: #FEF2F2; color: #EF4444; border: 1px solid #FECACA; }
+        .btn-delete:hover { background: #EF4444; color: white; }
+
+        /* ========================================= */
+        /* BẢNG ĐIỂM & THỐNG KÊ                      */
+        /* ========================================= */
+        .btn-back { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 14px; cursor: pointer; font-weight: 700; margin-bottom: 25px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .btn-back:hover { background: var(--background); color: var(--text-main); transform: translateX(-3px); }
+
+        .stats-container { margin-bottom: 35px; }
+        .stat-card { background: white; padding: 22px; border-radius: 20px; margin-bottom: 16px; border-left: 6px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.02); border: 1px solid #F1F5F9; }
+        .stat-card strong { color: var(--text-main); font-size: 15.5px; }
+        .stat-card.danger { border-left-color: var(--danger); background: #FEF2F2; border: 1px solid #FEE2E2;}
+        .stat-card.warning { border-left-color: var(--warning); background: #FFFBEB; border: 1px solid #FEF3C7;}
+        .progress-bar-container { height: 12px; background: var(--border); border-radius: 6px; margin-top: 14px; display: flex; overflow: hidden; }
+        .progress-segment { height: 100%; transition: width 0.5s ease-out; }
+        .seg-a { background: #3B82F6; } .seg-b { background: #8B5CF6; }
+        .seg-c { background: var(--warning); } .seg-d { background: var(--danger); }
+
+        .table-responsive { overflow-x: auto; background: var(--surface); border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 18px 20px; text-align: left; border-bottom: 1px solid #F1F5F9; }
+        th { background-color: var(--background); color: var(--secondary); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { font-size: 15px; color: var(--text-main); font-weight: 500;}
+        tr:hover { background-color: var(--background); }
+        tr:last-child td { border-bottom: none; }
+        
+        .score-high { color: var(--success); font-weight: 900; font-size: 18px; }
+        .score-low { color: var(--danger); font-weight: 900; font-size: 18px; }
+        .cheat-alert { background: #FEF2F2; color: #DC2626; padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; border: 1px solid #FECACA; }
+        .btn-view-detail { background: #EEF2FF; color: #4F46E5; border: none; padding: 6px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-view-detail:hover { background: #C7D2FE; }
+
+        h2 button { background: #EEF2FF !important; color: var(--primary) !important; border-radius: 12px !important; padding: 8px 16px !important; font-weight: 700 !important; font-size: 14px !important; transition: 0.2s !important; border: none; cursor: pointer; }
+        h2 button:hover { transform: scale(1.05); background: #E0E7FF !important; }
+
+        /* ========================================= */
+        /* MODAL OVERLAY (VIP & REVIEW)              */
+        /* ========================================= */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; transition: 0.3s; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            width: 100%; max-width: 800px; max-height: 90vh; border-radius: 28px;
+            padding: 30px; overflow-y: auto; position: relative;
+            transform: translateY(20px); transition: 0.3s;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .btn-close-modal {
+            position: absolute; top: 20px; right: 20px; background: #F1F5F9; border: none; 
+            width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; color: #64748B; transition: 0.2s;
+        }
+        .btn-close-modal:hover { background: #EF4444; color: white; }
+        
+        .review-q-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+        .review-q-text { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #1E293B; }
+        .review-opt { padding: 12px 16px; border-radius: 12px; margin-top: 8px; border: 1px solid #E2E8F0; background: white; font-size: 15px; color: #475569;}
+        .opt-right { background: #ECFDF5; border-color: #34D399; color: #047857; font-weight: 700; }
+        .opt-wrong { background: #FEF2F2; border-color: #F87171; color: #B91C1C; font-weight: 700; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 14px 20px; flex-direction: column; gap: 12px; text-align: center; }
+            .admin-container { padding: 25px; border-radius: 24px; }
+            .row { flex-direction: column; gap: 0; } .tabs { flex-direction: column; }
+            h2 { font-size: 22px; }
+            .modal-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar" id="mainNavbar" style="display:none;">
+        <div class="user-info" id="displayAdminName">Đang tải dữ liệu...</div>
+        <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+    </div>
+
+    <div class="admin-container" id="mainAdminContainer" style="display:none;">
+        <div class="tabs" id="tabMenu">
+            <button class="tab-btn active" onclick="switchTab('create')">✍️ Tạo Bài Thi</button>
+            <button class="tab-btn" onclick="switchTab('manage')">🗂️ Quản Lý Phòng</button>
+            <button class="tab-btn" id="tabBtnAdminUsers" onclick="switchTab('users')">👑 Quản Lý VIP</button>
+        </div>
+
+        <div id="tab-create" class="tab-content active">
+            <h2>Tạo Bài Thi Mới</h2>
+            <div class="instruction-box">
+                <strong>💡 Hướng dẫn nhập liệu:</strong><br><br>
+                - <b>Excel:</b> Cần các cột tiêu đề chuẩn: <i>Câu hỏi, A, B, C, D, Đáp án</i>.<br>
+                - <b>Word / Dán trực tiếp:</b> Mỗi câu bắt đầu bằng "Câu X:", sau đó là các lựa chọn A, B, C, D và dòng cuối là "Đáp án: X".
+            </div>
+            <div class="import-group">
+                <button class="btn-import btn-import-excel" onclick="document.getElementById('excelInput').click()">📊 Nhập Excel (.xlsx)</button>
+                <button class="btn-import btn-import-word" onclick="document.getElementById('wordInput').click()">📝 Nhập Word (.docx)</button>
+                <button class="btn-import btn-import-sample" onclick="downloadSampleExcel()">📥 Tải File Mẫu</button>
+                <input type="file" id="excelInput" hidden accept=".xlsx, .xls" onchange="handleExcelImport(event)">
+                <input type="file" id="wordInput" hidden accept=".docx" onchange="handleWordImport(event)">
+            </div>
+            <div class="row">
+                <div class="col form-group">
+                    <label>Tên bài thi:</label>
+                    <input type="text" id="examTitle" class="form-input" placeholder="VD: Kiểm tra 15p Vật Lý 12" required>
+                </div>
+                <div class="col form-group">
+                    <label>Thời gian (Phút):</label>
+                    <input type="number" id="examTime" class="form-input" placeholder="VD: 15" required min="1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nội dung đề thi:</label>
+                <textarea id="examContent" class="form-input" placeholder="Dán nội dung hoặc tải file để hiển thị tại đây..."></textarea>
+            </div>
+            <button id="btnCreateExam" class="btn-create">Xử lý & Tạo Mã Phòng</button>
+        </div>
+
+        <div id="tab-manage" class="tab-content">
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                Danh sách Bài Thi
+                <button onclick="loadExams()" title="Làm mới danh sách">🔄 Làm mới</button>
+            </h2>
+            <div id="examListContainer" class="exam-grid">
+                <p style="color: var(--secondary); font-weight: 500;">Đang tải dữ liệu...</p>
+            </div>
+        </div>
+
+        <div id="tab-users" class="tab-content">
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                Quản Lý Tài Khoản VIP
+                <button onclick="loadUsersList()" title="Làm mới danh sách">🔄 Làm mới</button>
+            </h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên / Email</th>
+                            <th>Trạng Thái</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr><td colspan="3" style="text-align:center;">Đang tải danh sách...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-scores" class="tab-content">
+            <button class="btn-back" onclick="switchTab('manage')">⬅ Quay lại danh sách</button>
+            <h2 id="scoreBoardTitle" style="color: var(--success);">Bảng Điểm: ---</h2>
+            <div class="stats-container" id="statsContainer"></div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hạng</th>
+                            <th>Họ và Tên</th>
+                            <th>Lớp</th>
+                            <th>Điểm Số</th>
+                            <th>Câu Đúng</th>
+                            <th>Tình trạng</th>
+                            <th>Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="vipOverlay" class="modal-overlay" style="z-index: 9999; background: rgba(15, 23, 42, 0.95);">
+        <div class="modal-content" style="text-align: center; max-width: 480px; padding: 40px 30px;">
+            <h2 style="color: #EF4444; font-size: 28px; margin-bottom: 10px;">🔒 Tài Khoản Chưa Kích Hoạt</h2>
+            <p style="color: #475569; margin-bottom: 25px; font-size: 15px; line-height: 1.6;">Email <b id="displayPendingEmail" style="color:#4F46E5;"></b> của bạn hiện chưa được cấp quyền sử dụng hệ thống Tạo Đề Trắc Nghiệm.</p>
+            <div style="background: #F1F5F9; padding: 20px; border-radius: 16px; margin-bottom: 30px; border: 1px dashed #CBD5E1;">
+                <p style="font-weight: 600; margin-bottom: 8px;">Vui lòng liên hệ Admin để nâng cấp VIP:</p>
+                <h3 style="color: #10B981; font-size: 24px; letter-spacing: 1px;">Zalo: 09xx.xxx.xxx</h3>
+                <p style="font-size: 13px; color: #64748B; margin-top: 10px;">(Cung cấp email của bạn cho Admin để được duyệt)</p>
+            </div>
+            <button id="btnExitVip" class="btn-create" style="background: #64748B; box-shadow: none; padding: 14px;">Quay lại Trang chủ</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal-content">
+            <button class="btn-close-modal" onclick="closeReviewModal()">✕</button>
+            <h2 style="font-size: 24px; margin-bottom: 5px; color: var(--primary);" id="modalStudentName">Chi tiết bài làm</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px; font-weight: 500; font-size: 15px;" id="modalStudentScore">Điểm: -- | Số câu đúng: --</p>
+            <div id="modalReviewContainer"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, getDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuRHLzyXZJgL1xfQMIeyMlYc5YX0p5bmM",
+            authDomain: "neww-16bc7.firebaseapp.com",
+            projectId: "neww-16bc7",
+            storageBucket: "neww-16bc7.firebasestorage.app",
+            messagingSenderId: "305448357382",
+            appId: "1:305448357382:web:69fb9d1509ecd658bebd87"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUser = null;
+        let currentUserRole = 'pending'; // 'admin', 'vip', 'pending', 'blocked'
+        
+        // TRÙM CUỐI - HARDCODE SUPER ADMIN
+        const SUPER_ADMIN_EMAIL = "dangcanh13102008@gmail.com";
+
+        let currentExamQuestions = []; 
+        let currentExamResults = [];   
+
+        // -----------------------------------------
+        // HỆ THỐNG PHÂN QUYỀN (RBAC)
+        // -----------------------------------------
+        onAuthStateChanged(auth, async (user) => {
+            if (user && !user.isAnonymous) {
+                currentUser = user;
+                document.getElementById('displayAdminName').innerText = "Giáo viên: " + user.displayName;
+                document.getElementById('displayPendingEmail').innerText = user.email;
+                
+                // Lấy thông tin role từ Firestore
+                const userRef = doc(db, 'users', user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (user.email === SUPER_ADMIN_EMAIL) {
+                    currentUserRole = 'admin';
+                    // Tự động update profile cho Super Admin vào database nếu chưa có
+                    if (!userSnap.exists()) {
+                        await setDoc(userRef, { email: user.email, name: user.displayName, role: 'admin', createdAt: serverTimestamp() });
+                    }
+                } else if (userSnap.exists()) {
+                    currentUserRole = userSnap.data().role;
+                } else {
+                    // Người dùng mới toanh -> Đưa vào trạng thái Chờ duyệt (pending)
+                    currentUserRole = 'pending';
+                    await setDoc(userRef, { email: user.email, name: user.displayName, role: 'pending', createdAt: serverTimestamp() });
+                }
+
+                applyRoleAccess();
+            } else { 
+                window.location.href = "index.html"; 
+            }
+        });
+
+        function applyRoleAccess() {
+            if (currentUserRole === 'admin' || currentUserRole === 'vip') {
+                // Mở khóa UI
+                document.getElementById('mainNavbar').style.display = 'flex';
+                document.getElementById('mainAdminContainer').style.display = 'block';
+                document.getElementById('vipOverlay').classList.remove('active');
+                
+                if (currentUserRole === 'admin') {
+                    // Super Admin thấy thêm Tab Quản Lý VIP
+                    document.getElementById('tabBtnAdminUsers').style.display = 'block';
+                }
+            } else {
+                // Pending hoặc Blocked -> Hiện Popup khóa mõm
+                document.getElementById('mainNavbar').style.display = 'none';
+                document.getElementById('mainAdminContainer').style.display = 'none';
+                
+                if(currentUserRole === 'blocked') {
+                    document.querySelector('#vipOverlay h2').innerText = "🚫 Tài Khoản Bị Khóa";
+                    document.querySelector('#vipOverlay p').innerHTML = `Email <b style="color:#4F46E5;">${currentUser.email}</b> đã bị Admin khóa vĩnh viễn do vi phạm chính sách.`;
+                }
+                
+                document.getElementById('vipOverlay').classList.add('active');
+            }
+        }
+
+        document.getElementById('btnLogout').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "index.html"; }); });
+        document.getElementById('btnExitVip').addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "index.html"; }); });
+
+        // -----------------------------------------
+        // QUẢN LÝ DANH SÁCH USERS (Chỉ dành cho Super Admin)
+        // -----------------------------------------
+        // QUẢN LÝ DANH SÁCH USERS VÀ HẠN VIP
+        window.loadUsersList = async function() {
+            if (currentUserRole !== 'admin') return;
+            const container = document.getElementById('userTableBody');
+            container.innerHTML = '<tr><td colspan="3" style="text-align:center;">Đang tải danh sách...</td></tr>';
+            try {
+                const q = query(collection(db, "users"));
+                const querySnapshot = await getDocs(q);
+                let html = '';
+                
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const uid = docSnap.id;
+                    if (data.email === SUPER_ADMIN_EMAIL) return; 
+                    
+                    let statusBadge = '';
+                    let actionBtns = '';
+                    let expireText = '';
+                    
+                    if (data.role === 'vip') {
+                        // Tính toán hiển thị ngày hết hạn
+                        if (data.vipExpirationDate) {
+                            const expDate = data.vipExpirationDate.toDate();
+                            const daysLeft = Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24));
+                            expireText = `<br><span style="font-size:12px; color:#EF4444;">Hết hạn: ${expDate.toLocaleDateString('vi-VN')} (Còn ${daysLeft} ngày)</span>`;
+                        }
+
+                        statusBadge = `<span style="background:#ECFDF5; color:#047857; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold;">🌟 VIP</span>${expireText}`;
+                        actionBtns = `
+                            <button class="btn-view-detail" style="background:#EEF2FF; color:#4F46E5; border:1px solid #C7D2FE; margin-right:5px;" onclick="grantVip1Month('${uid}')">+ Gia hạn 1T</button>
+                            <button class="btn-view-detail" style="background:#FEF2F2; color:#EF4444; border:1px solid #FECACA; margin-right:5px;" onclick="changeUserRole('${uid}', 'pending')">Hủy VIP</button>
+                            <button class="btn-view-detail" style="background:#1E293B; color:white;" onclick="changeUserRole('${uid}', 'blocked')">Khóa</button>
+                        `;
+                    } else if (data.role === 'blocked') {
+                        statusBadge = '<span style="background:#F1F5F9; color:#64748B; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold;">🚫 Bị Khóa</span>';
+                        actionBtns = `<button class="btn-view-detail" style="background:#EFF6FF; color:#3B82F6; border:1px solid #BFDBFE;" onclick="changeUserRole('${uid}', 'pending')">Mở khóa</button>`;
+                    } else {
+                        statusBadge = '<span style="background:#FFFBEB; color:#D97706; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:bold;">⏳ Chờ nạp VIP</span>';
+                        actionBtns = `
+                            <button class="btn-view-detail" style="background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; margin-right:5px;" onclick="grantVip1Month('${uid}')">Cấp VIP 1 Tháng</button>
+                            <button class="btn-view-detail" style="background:#1E293B; color:white;" onclick="changeUserRole('${uid}', 'blocked')">Khóa</button>
+                        `;
+                    }
+                    
+                    html += `<tr><td><b>${data.name || 'Người dùng'}</b><br><span style="font-size:13px; color:#64748B;">${data.email}</span></td><td>${statusBadge}</td><td>${actionBtns}</td></tr>`;
+                });
+                container.innerHTML = html || '<tr><td colspan="3" style="text-align:center;">Chưa có người dùng nào đăng ký.</td></tr>';
+            } catch(e) { container.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Lỗi tải dữ liệu.</td></tr>'; }
+        }
+
+        // TÍNH NĂNG MỚI: CẤP VIP 30 NGÀY
+        window.grantVip1Month = async function(uid) {
+            Swal.fire({ title: 'Đang cấp quyền VIP...', didOpen: () => Swal.showLoading() });
+            try {
+                // Cộng thêm 30 ngày từ thời điểm hiện tại
+                const expireDate = new Date();
+                expireDate.setDate(expireDate.getDate() + 30);
+                
+                await updateDoc(doc(db, "users", uid), { 
+                    role: 'vip',
+                    vipExpirationDate: expireDate // Firebase tự động parse JS Date thành Timestamp
+                });
+                
+                Swal.fire({ icon: 'success', title: 'Thành công!', text: 'Tài khoản đã được cấp VIP 30 ngày.', timer: 2000, showConfirmButton: false });
+                loadUsersList();
+            } catch(e) { Swal.fire('Lỗi', e.message, 'error'); }
+        }
+
+        window.changeUserRole = async function(uid, newRole) {
+            Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
+            try {
+                await updateDoc(doc(db, "users", uid), { role: newRole });
+                Swal.fire({ icon: 'success', title: 'Đã cập nhật', timer: 1500, showConfirmButton: false });
+                loadUsersList();
+            } catch(e) { Swal.fire('Lỗi', e.message, 'error'); }
+        }
+        // CHUYỂN TAB
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if(tabName === 'create') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-create').classList.add('active');
+                document.getElementById('tabMenu').style.display = 'flex';
+            } else if(tabName === 'manage') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-manage').classList.add('active');
+                document.getElementById('tabMenu').style.display = 'flex';
+                loadExams(); 
+            } else if(tabName === 'users') {
+                document.getElementById('tabBtnAdminUsers').classList.add('active');
+                document.getElementById('tab-users').classList.add('active');
+                document.getElementById('tabMenu').style.display = 'flex';
+                loadUsersList();
+            } else if(tabName === 'scores') {
+                document.getElementById('tabMenu').style.display = 'none';
+                document.getElementById('tab-scores').classList.add('active');
+            }
+        }
+
+        // PARSER CÂU HỎI (Phiên bản thông minh)
+        function parseQuestions(rawText) {
+            const questions = [];
+            let text = "\n" + rawText.replace(/\r/g, "");
+            const blocks = text.split(/\n\s*(?:Câu|Bài|Question|Q|Stt)?\s*\d+[\.\:\/\-]/i).filter(b => b.trim().length > 10);
+
+            blocks.forEach((block) => {
+                let qText = "", aText = "", bText = "", cText = "", dText = "", correctAns = "";
+                let currentBlock = block.trim();
+                let globalAns = "";
+                const ansRegex = /(?:Đáp án|Trả lời|Chọn|Key|Kết quả)[\s\:\.\-\>]*([A-D])/i;
+                const ansMatch = currentBlock.match(ansRegex);
+                if (ansMatch) globalAns = ansMatch[1].toUpperCase();
+
+                let flatBlock = " " + currentBlock.replace(/\n/g, " ").replace(/\s+/g, " ");
+
+                const regA = /\s+A[\.\:\/\)]\s+/; const regB = /\s+B[\.\:\/\)]\s+/;
+                const regC = /\s+C[\.\:\/\)]\s+/; const regD = /\s+D[\.\:\/\)]\s+/;
+
+                const idxA = flatBlock.search(regA); const idxB = flatBlock.search(regB);
+                const idxC = flatBlock.search(regC); const idxD = flatBlock.search(regD);
+
+                if (idxA !== -1 && idxB !== -1 && idxC !== -1 && idxD !== -1 && idxA < idxB && idxB < idxC && idxC < idxD) {
+                    qText = flatBlock.substring(0, idxA).trim();
+                    const lenA = flatBlock.match(regA)[0].length; const lenB = flatBlock.match(regB)[0].length;
+                    const lenC = flatBlock.match(regC)[0].length; const lenD = flatBlock.match(regD)[0].length;
+                    
+                    aText = flatBlock.substring(idxA + lenA, idxB).trim();
+                    bText = flatBlock.substring(idxB + lenB, idxC).trim();
+                    cText = flatBlock.substring(idxC + lenC, idxD).trim();
+                    
+                    let dRaw = flatBlock.substring(idxD + lenD).trim();
+                    const tailRegex = /(?:\s+|^)(?:Đáp án|Trả lời|Chọn|Key|Kết quả|Lời giải|Giải thích|Hướng dẫn|HD\s*Giải|HD)\b/i;
+                    const tailMatch = dRaw.match(tailRegex);
+
+                    if (tailMatch) {
+                        let tailText = dRaw.substring(tailMatch.index);
+                        dText = dRaw.substring(0, tailMatch.index).trim(); 
+                        const exactAns = tailText.match(/(?:Đáp án|Trả lời|Chọn|Key|Kết quả|Là)[\s\:\.\-\>]*([A-D])/i) || tailText.match(/\b([A-D])\b/i);
+                        correctAns = exactAns ? exactAns[1].toUpperCase() : globalAns;
+                    } else {
+                        const endCharMatch = dRaw.match(/\s+([A-D])$/i);
+                        if (endCharMatch) {
+                            if (!globalAns || endCharMatch[1].toUpperCase() === globalAns) {
+                                correctAns = endCharMatch[1].toUpperCase();
+                                dText = dRaw.substring(0, dRaw.lastIndexOf(endCharMatch[1])).trim();
+                            } else { dText = dRaw; correctAns = globalAns; }
+                        } else { dText = dRaw; correctAns = globalAns; }
+                    }
+                }
+                if (qText && aText && bText && cText && dText && correctAns) questions.push({ question: qText, options: { A: aText, B: bText, C: cText, D: dText }, correctAnswer: correctAns });
+            });
+            return questions;
+        }
+
+        window.handleExcelImport = function(e) {
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result); const workbook = XLSX.read(data, { type: 'array' });
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    let resultText = "";
+                    jsonData.forEach((row, i) => {
+                        const q = row['Câu hỏi'] || row['Question'], a = row['A'], b = row['B'], c = row['C'], d = row['D'], ans = row['Đáp án'] || row['Answer'];
+                        if(q && a && b && c && d && ans) resultText += `Câu ${i+1}: ${q}\nA. ${a}\nB. ${b}\nC. ${c}\nD. ${d}\nĐáp án: ${ans}\n\n`;
+                    });
+                    document.getElementById('examContent').value = resultText; Swal.fire("Thành công", `Đã nhập xong ${jsonData.length} câu`, "success");
+                } catch(err) { Swal.fire("Lỗi file Excel", "Định dạng không được hỗ trợ", "error"); } e.target.value = '';
+            }; reader.readAsArrayBuffer(file);
+        };
+
+        window.handleWordImport = function(e) {
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = function(evt) {
+                mammoth.extractRawText({ arrayBuffer: evt.target.result }).then(res => {
+                    document.getElementById('examContent').value = res.value; Swal.fire("Thành công", "Đã trích xuất Word", "success");
+                }).catch(err => { Swal.fire("Lỗi file Word", "Không thể đọc file", "error"); }); e.target.value = '';
+            }; reader.readAsArrayBuffer(file);
+        };
+
+        window.downloadSampleExcel = function() {
+            const data = [{ "Câu hỏi": "Thủ đô của Việt Nam là gì?", "A": "Hà Nội", "B": "TP.HCM", "C": "Đà Nẵng", "D": "Cần Thơ", "Đáp án": "A" }];
+            const worksheet = XLSX.utils.json_to_sheet(data); const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "DeThiMau"); XLSX.writeFile(workbook, "Mau_De_Thi_Chuan.xlsx");
+        };
+
+        document.getElementById('btnCreateExam').addEventListener('click', async () => {
+            const title = document.getElementById('examTitle').value.trim(), time = document.getElementById('examTime').value.trim(), rawContent = document.getElementById('examContent').value.trim();
+            if (!title || !time || !rawContent) return Swal.fire('Thiếu thông tin!', 'Điền đầy đủ form.', 'warning');
+            Swal.fire({ title: 'Đang tạo phòng...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const questions = parseQuestions(rawContent);
+                if (questions.length === 0) return Swal.fire('Lỗi', 'Không nhận diện được câu hỏi nào.', 'error');
+                const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+                await addDoc(collection(db, "exams"), { title: title, timeLimit: parseInt(time), roomCode: roomCode, teacherId: currentUser.uid, teacherName: currentUser.displayName, questions: questions, createdAt: serverTimestamp(), status: 'active' });
+                Swal.fire({ icon: 'success', title: 'Tạo phòng thành công!', html: `Mã vào thi:<br><b style="font-size:35px; color:#EF4444; letter-spacing: 6px;">${roomCode}</b>`, confirmButtonText: 'Tuyệt vời' }).then(() => {
+                    document.getElementById('examTitle').value = ''; document.getElementById('examTime').value = ''; document.getElementById('examContent').value = ''; switchTab('manage');
+                });
+            } catch (error) { Swal.fire('Lỗi', error.message, 'error'); }
+        });
+
+        window.loadExams = async function() {
+            if (!currentUser) return;
+            const container = document.getElementById('examListContainer'); container.innerHTML = '<p>Đang tải dữ liệu...</p>';
+            try {
+                const q = query(collection(db, "exams"), where("teacherId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) { container.innerHTML = '<p>Bạn chưa tạo bài thi nào.</p>'; return; }
+                const exams = []; querySnapshot.forEach(doc => exams.push({ id: doc.id, ...doc.data() }));
+                exams.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+                
+                container.innerHTML = '';
+                exams.forEach((data) => {
+                    const qCount = data.questions ? data.questions.length : 0;
+                    const isActive = data.status === 'active';
+                    const toggleBtn = isActive ? `<button class="btn-sm btn-close" onclick="toggleRoomStatus('${data.id}', 'closed')">🔒 Khóa Phòng</button>` : `<button class="btn-sm btn-open" onclick="toggleRoomStatus('${data.id}', 'active')">🔓 Mở Lại</button>`;
+                        
+                    container.innerHTML += `
+                        <div class="exam-card">
+                            <h3>${data.title}</h3>
+                            <div class="room-code">${data.roomCode}</div>
+                            <div class="exam-info">
+                                ⏱ Thời gian: <b>${data.timeLimit} phút</b><br>
+                                📝 Số lượng: <b>${qCount} câu</b><br>
+                                🟢 Trạng thái: <span class="badge ${isActive ? 'badge-active' : 'badge-closed'}">${isActive ? 'Đang mở' : 'Đã khóa'}</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-sm btn-scores" onclick="viewScores('${data.id}', '${data.title.replace(/'/g, "\\'")}')">📊 Xem Bảng Điểm</button>
+                                ${toggleBtn}
+                                <div class="btn-group-sm">
+                                    <button class="btn-sm btn-export" onclick="exportScoresToExcel('${data.id}', '${data.title.replace(/'/g, "\\'")}')">📥 Tải Excel</button>
+                                    <button class="btn-sm btn-delete" onclick="deleteExam('${data.id}')">🗑️ Xóa</button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            } catch (error) { container.innerHTML = '<p style="color:red">Gặp lỗi tải dữ liệu.</p>'; }
+        }
+
+        window.deleteExam = function(examId) {
+            Swal.fire({ title: 'Xóa bài thi này?', text: "Dữ liệu sẽ bị xóa vĩnh viễn không thể khôi phục!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'Xóa ngay' })
+            .then(async (result) => {
+                if (result.isConfirmed) { Swal.fire({ title: 'Đang xóa...', didOpen: () => Swal.showLoading() }); try { await deleteDoc(doc(db, "exams", examId)); Swal.fire('Đã xóa!', 'Bài thi đã được dọn dẹp.', 'success'); loadExams(); } catch (error) { Swal.fire('Lỗi', error.message, 'error'); } }
+            });
+        }
+
+        window.exportScoresToExcel = async function(examId, examTitle) {
+            Swal.fire({ title: 'Đang trích xuất dữ liệu...', didOpen: () => Swal.showLoading() });
+            try {
+                const q = query(collection(db, "results"), where("examId", "==", examId));
+                const querySnapshot = await getDocs(q);
+                if(querySnapshot.empty) { return Swal.fire('Thông báo', 'Chưa có học sinh nào nộp bài để xuất file.', 'info'); }
+                const results = []; querySnapshot.forEach(doc => results.push(doc.data()));
+                results.sort((a, b) => b.score - a.score);
+
+                const excelData = results.map((res, index) => ({ "Hạng": index + 1, "Họ và Tên": res.studentName, "Lớp": res.studentClass, "Điểm Số": res.score.toFixed(1), "Số Câu Đúng": `${res.correctCount}/${res.totalQuestions}`, "Gian lận (Thoát tab)": res.cheatWarnings > 0 ? `${res.cheatWarnings} lần` : "Không" }));
+                const worksheet = XLSX.utils.json_to_sheet(excelData); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "BangDiem");
+                let safeTitle = examTitle.replace(/[^a-zA-Z0-9\u00C0-\u1EF9]/g, '_'); XLSX.writeFile(workbook, `Diem_${safeTitle}.xlsx`); Swal.fire('Thành công!', 'Đã tải xuống file Excel bảng điểm.', 'success');
+            } catch (error) { Swal.fire('Lỗi', error.message, 'error'); }
+        }
+
+        window.toggleRoomStatus = async function(examId, newStatus) {
+            Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
+            try { await updateDoc(doc(db, "exams", examId), { status: newStatus }); Swal.fire({ icon: 'success', title: 'Thành công', timer: 1500, showConfirmButton: false }); loadExams(); } catch (error) { Swal.fire('Lỗi', error.message, 'error'); }
+        }
+
+        window.viewScores = async function(examId, examTitle) {
+            document.getElementById('scoreBoardTitle').innerText = `Bảng Điểm: ${examTitle}`;
+            const tbody = document.getElementById('scoreTableBody'); const statsDiv = document.getElementById('statsContainer');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px;">Đang tính toán điểm số...</td></tr>'; statsDiv.innerHTML = ''; switchTab('scores');
+            try {
+                const examSnap = await getDoc(doc(db, "exams", examId)); currentExamQuestions = examSnap.data().questions;
+                const querySnapshot = await getDocs(query(collection(db, "results"), where("examId", "==", examId)));
+                if(querySnapshot.empty) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Chưa có học sinh nào nộp bài.</td></tr>'; return; }
+                
+                currentExamResults = []; querySnapshot.forEach(doc => currentExamResults.push(doc.data()));
+                currentExamResults.sort((a, b) => b.score - a.score); 
+                
+                let questionStats = currentExamQuestions.map(() => ({ A: 0, B: 0, C: 0, D: 0, wrong: 0 }));
+                currentExamResults.forEach(res => {
+                    currentExamQuestions.forEach((q, idx) => {
+                        const studentAns = res.answers ? res.answers[`q_${idx}`] : null;
+                        if (studentAns) questionStats[idx][studentAns]++;
+                        if (studentAns !== q.correctAnswer) questionStats[idx].wrong++;
+                    });
+                });
+                
+                statsDiv.innerHTML = '<h3>📌 Phân Tích Câu Khó (>40% Sai)</h3>';
+                questionStats.forEach((stat, idx) => {
+                    const wrongRate = (stat.wrong / currentExamResults.length) * 100;
+                    if (wrongRate > 40) {
+                        statsDiv.innerHTML += `<div class="stat-card ${wrongRate > 70 ? 'danger' : 'warning'}"><strong>Câu ${idx + 1}: ${currentExamQuestions[idx].question}</strong><div style="font-size: 13px; color:#64748B; margin-top:5px;">Tỷ lệ sai: <b>${wrongRate.toFixed(1)}%</b> | Đáp án: <b>${currentExamQuestions[idx].correctAnswer}</b></div></div>`;
+                    }
+                });
+
+                tbody.innerHTML = '';
+                currentExamResults.forEach((res, index) => {
+                    let scoreClass = res.score >= 5 ? 'score-high' : 'score-low';
+                    let cheatHtml = res.cheatWarnings > 0 ? `<span class="cheat-alert">Cảnh báo: ${res.cheatWarnings} lần</span>` : `<span style="color:var(--success); font-weight:700;">Hợp lệ</span>`;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>#${index + 1}</b></td>
+                            <td>${res.studentName}</td>
+                            <td><b>${res.studentClass}</b></td>
+                            <td class="${scoreClass}">${res.score.toFixed(1)}</td>
+                            <td>${res.correctCount} / ${res.totalQuestions}</td>
+                            <td>${cheatHtml}</td>
+                            <td><button class="btn-view-detail" onclick="viewStudentDetail(${index})">Xem bài</button></td>
+                        </tr>`;
+                });
+            } catch (error) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Lỗi lấy dữ liệu.</td></tr>'; }
+        }
+
+        window.viewStudentDetail = function(index) {
+            const res = currentExamResults[index];
+            document.getElementById('modalStudentName').innerText = `Bài làm của: ${res.studentName} - Lớp ${res.studentClass}`;
+            document.getElementById('modalStudentScore').innerText = `Điểm số: ${res.score.toFixed(1)}/10 | Số câu đúng: ${res.correctCount}/${res.totalQuestions}`;
+            
+            const container = document.getElementById('modalReviewContainer'); container.innerHTML = '';
+            currentExamQuestions.forEach((q, qIndex) => {
+                const studentAns = res.answers ? res.answers[`q_${qIndex}`] : null;
+                const isCorrect = studentAns === q.correctAnswer;
+                
+                let badge = studentAns == null ? `<span style="display:inline-block; padding: 4px 10px; background:#F1F5F9; color:#64748B; border-radius:10px; font-size:12px; font-weight:bold; margin-bottom:10px;">Bỏ trống</span>`
+                    : `<span style="display:inline-block; padding: 4px 10px; border-radius:10px; font-size:12px; font-weight:bold; margin-bottom:10px; ${isCorrect ? 'background:#ECFDF5; color:#047857;' : 'background:#FEF2F2; color:#B91C1C;'}">${isCorrect ? '✔ Đúng' : '❌ Sai'}</span>`;
+
+                let html = `<div class="review-q-card">${badge}<div class="review-q-text">Câu ${qIndex + 1}: ${q.question}</div>`;
+                ['A', 'B', 'C', 'D'].forEach(opt => {
+                    let optClass = "review-opt";
+                    if (opt === q.correctAnswer) optClass += " opt-right";
+                    else if (opt === studentAns && studentAns !== q.correctAnswer) optClass += " opt-wrong";
+                    html += `<div class="${optClass}">${opt}. ${q.options[opt]}</div>`;
+                });
+                html += `</div>`; container.innerHTML += html;
+            });
+            document.getElementById('reviewModal').classList.add('active');
+        }
+        window.closeReviewModal = function() { document.getElementById('reviewModal').classList.remove('active'); }
+        // Chống chuột phải
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
+    // Chống phím tắt F12, Ctrl+Shift+I, Ctrl+U
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+           (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || 
+           (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+            return false;
+        }
+    };
+    </script>
+</body>
+</html>
