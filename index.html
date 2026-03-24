@@ -33,7 +33,8 @@
         .btn-anon { background: linear-gradient(180deg, #007AFF 0%, #0063CC 100%); color: #ffffff; box-shadow: 0 8px 20px rgba(0, 122, 255, 0.25); }
         .btn-anon:hover { box-shadow: 0 12px 25px rgba(0, 122, 255, 0.35); }
         .footer-text { margin-top: 25px; font-size: 13px; color: #8E8E93; font-weight: 500; }
-        /* CSS VIP TỐI GIẢN - NO REFRESH BUTTON */
+        
+        /* CSS VIP TỐI GIẢN */
         .vip-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px);
@@ -45,15 +46,17 @@
             background: #fff; width: 90%; max-width: 380px;
             padding: 35px 25px; border-radius: 32px; text-align: center;
             box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            max-height: 90vh; overflow-y: auto;
         }
 
         .qr-container {
             background: #fff; padding: 10px; border-radius: 20px;
-            border: 2px solid #F1F5F9; margin-bottom: 25px;
+            border: 2px solid #F1F5F9; margin-bottom: 20px;
+            position: relative;
         }
         .qr-container img { width: 100%; height: auto; display: block; border-radius: 12px; }
 
-        .bank-info { text-align: left; display: flex; flex-direction: column; gap: 12px; }
+        .bank-info { text-align: left; display: flex; flex-direction: column; gap: 10px; }
         .copy-box {
             background: #F8FAFC; padding: 14px 18px; border-radius: 16px;
             cursor: pointer; transition: 0.2s; border: 1px solid #E2E8F0;
@@ -69,6 +72,12 @@
             transition: 0.2s;
         }
         .btn-close:hover { background: #E2E8F0; color: #1E293B; }
+        
+        .discount-badge {
+            background: #FEF2F2; color: #EF4444; padding: 4px 8px; 
+            border-radius: 8px; font-size: 13px; font-weight: 800; 
+            margin-left: 5px; vertical-align: middle; border: 1px solid #FECACA;
+        }
     </style>
 </head>
 <body>
@@ -98,7 +107,11 @@
     <div id="vipOverlay" class="vip-modal-overlay">
         <div class="vip-modal-content">
             <h2>Nâng Cấp VIP</h2>
-            <p style="color: #64748B; font-size: 14px; margin-bottom: 20px;">Email: <b id="displayPendingEmail" style="color: #4F46E5;">---</b></p>
+            <!-- <p style="color: #64748B; font-size: 14px; margin-bottom: 10px;">Email: <b id="displayPendingEmail" style="color: #4F46E5;">---</b></p> -->
+            
+            <div id="priceDisplayContainer" style="margin-bottom: 15px; padding: 10px; background: #F8FAFC; border-radius: 12px;">
+                Đang tải bảng giá...
+            </div>
 
             <div class="qr-container">
                 <img id="qrCodeImage" src="" alt="Quét mã để thanh toán">
@@ -114,11 +127,6 @@
                     <b id="displayTransferContent" style="color: #EF4444;">VIP --- 📋</b>
                 </div>
             </div>
-
-            <!-- <p style="font-size: 13px; color: #64748B; margin-top: 25px; line-height: 1.5;">
-                Vui lòng chuyển khoản đúng nội dung.<br>
-                Hệ thống sẽ được kích hoạt sau ít phút.
-            </p> -->
             
             <button class="btn-close" onclick="document.getElementById('vipOverlay').classList.remove('active')">Đóng lại</button>
         </div>
@@ -126,7 +134,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -144,6 +152,34 @@
         const googleProvider = new GoogleAuthProvider();
 
         const SUPER_ADMIN_EMAIL = "dangcanh13102008@gmail.com";
+        const BASE_AMOUNT = 50000; // Giá gốc 50k
+        let currentDiscount = 0;
+
+        // 1. TẢI CÀI ĐẶT DISCOUNT TỪ FIREBASE KHI VỪA VÀO TRANG
+        async function fetchSystemSettings() {
+            try {
+                const snap = await getDoc(doc(db, "settings", "global"));
+                if (snap.exists() && snap.data().discountRate) {
+                    currentDiscount = snap.data().discountRate;
+                }
+            } catch(e) { console.error("Không tải được settings:", e); }
+        }
+        fetchSystemSettings();
+
+        // 2. AUTH GUARD: CHẶN NÚT BACK (Đá thẳng về Admin nếu đã login)
+        onAuthStateChanged(auth, async (user) => {
+            if (user && !user.isAnonymous) {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    const role = userSnap.data().role;
+                    if (role === 'admin' || role === 'vip') {
+                        // Trình duyệt sẽ xóa lịch sử hiện tại và ném thẳng sang Admin
+                        window.location.replace("admin.html");
+                    }
+                }
+            }
+        });
 
         document.getElementById('btnGoogle').addEventListener('click', () => {
             Swal.fire({ title: 'Đang kết nối...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
@@ -178,28 +214,43 @@
                 
                 if (userRole === 'admin' || userRole === 'vip') {
                     Swal.fire({ icon: 'success', title: 'Xin chào!', text: user.displayName, timer: 1500, showConfirmButton: false })
-                        .then(() => { window.location.href = "admin.html"; });
+                        .then(() => { window.location.replace("admin.html"); });
                 } else if (userRole === 'blocked') {
                     await signOut(auth);
                     Swal.fire({ icon: 'error', title: 'Bị khóa', text: 'Tài khoản của bạn đã bị vô hiệu hóa.' });
                 } else {
+                    // XỬ LÝ GIAO DIỆN TÍNH TIỀN (DISCOUNT) Ở ĐÂY
                     await signOut(auth);
                     Swal.close();
                     
-                    // Cấu hình Ngân Hàng (SỬA Ở ĐÂY NÈ!)
                     const bankID = "mbbank"; 
                     const stk = "0985461396"; 
                     const accountName = "DANG QUANG CANH"; 
-                    const amount = "50000"; 
+                    
+                    // Tính toán số tiền cuối cùng
+                    const finalAmount = BASE_AMOUNT - (BASE_AMOUNT * currentDiscount / 100);
                     
                     const shortEmail = user.email.split('@')[0];
                     const transferContent = `VIP ${shortEmail}`; 
                     
-                    const qrUrl = `https://img.vietqr.io/image/${bankID}-${stk}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountName)}`;
+                    const qrUrl = `https://img.vietqr.io/image/${bankID}-${stk}-compact2.png?amount=${finalAmount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountName)}`;
                     
-                    // Đẩy dữ liệu vào Popup
+                    // Render HTML giá tiền
+                    let priceHtml = '';
+                    if (currentDiscount > 0) {
+                        priceHtml = `
+                            <div style="font-size: 14px; color: #94A3B8; text-decoration: line-through; margin-bottom: 2px;">${BASE_AMOUNT.toLocaleString('vi-VN')}đ</div>
+                            <div style="color: #10B981; font-weight: 800; font-size: 24px;">
+                                ${finalAmount.toLocaleString('vi-VN')}đ/tháng
+                                <span class="discount-badge">-${currentDiscount}%</span>
+                            </div>`;
+                    } else {
+                        priceHtml = `<div style="color: #10B981; font-weight: 800; font-size: 24px;">${BASE_AMOUNT.toLocaleString('vi-VN')}đ/tháng</div>`;
+                    }
+                    
+                    document.getElementById('priceDisplayContainer').innerHTML = priceHtml;
                     document.getElementById('qrCodeImage').src = qrUrl;
-                    document.getElementById('displayPendingEmail').innerText = user.email;
+                    // document.getElementById('displayPendingEmail').innerText = user.email;
                     document.getElementById('displayTransferContent').innerText = transferContent;
                     
                     document.getElementById('vipOverlay').classList.add('active');
@@ -208,35 +259,23 @@
         });
 
         document.getElementById('btnAnon').addEventListener('click', () => {
-            // LƯU Ý: Đảm bảo trang thi của học sinh được lưu là student.html
             Swal.fire({ title: 'Đang vào hệ thống...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
             signInAnonymously(auth).then(() => { window.location.href = "student.html"; }).catch((error) => { Swal.fire('Lỗi', error.message, 'error'); });
         });
 
-        // Hàm copy văn bản nhanh
         window.copyText = function(text, label) {
             navigator.clipboard.writeText(text).then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: `Đã copy ${label}`,
-                    showConfirmButton: false,
-                    timer: 1000,
-                    toast: true,
-                    position: 'top-end'
-                });
+                Swal.fire({ icon: 'success', title: `Đã copy ${label}`, showConfirmButton: false, timer: 1000, toast: true, position: 'top-end' });
             });
         }
-        // Chống chuột phải
-    document.addEventListener('contextmenu', event => event.preventDefault());
 
-    // Chống phím tắt F12, Ctrl+Shift+I, Ctrl+U
-    document.onkeydown = function(e) {
-        if (e.keyCode == 123 || 
-           (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || 
-           (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
-            return false;
-        }
-    };
+        // Chống chuột phải & F12
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+                return false;
+            }
+        };
     </script>
 </body>
 </html>
