@@ -1,0 +1,21 @@
+{
+  "name": "Hệ thống Thi Trắc Nghiệm - CanhDang",
+  "short_name": "CD Quiz",
+  "description": "Nền tảng thi trắc nghiệm và giao bài tập trực tuyến",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4A90E2",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
