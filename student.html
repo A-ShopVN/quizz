@@ -60,6 +60,9 @@
         }
         .form-input:focus { background: #FFFFFF; border-color: #6366F1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); transform: translateY(-2px); }
         .input-code { font-size: 28px; font-weight: 800; letter-spacing: 12px; color: #6366F1; text-transform: uppercase;}
+        
+        /* Input tìm kiếm căn trái */
+        .search-input { text-align: left; padding: 14px 20px; font-weight: 500; margin-bottom: 20px; }
 
         .btn {
             width: 100%; padding: 18px; border: none; border-radius: 20px; font-size: 16px; font-weight: 800; cursor: pointer; 
@@ -181,6 +184,14 @@
     <div id="step-room" class="glass-container home-container">
         <div id="recentResultBanner"></div>
 
+        <div id="mistakesBanner" class="recent-result-banner" onclick="startMistakesPractice()" style="display: none; background: #FEF2F2; border-color: #FECACA; margin-bottom: 30px;">
+            <div>
+                <div style="font-size: 13px; color: #B91C1C; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Góc Luyện Tập</div>
+                <div style="font-size: 16px; font-weight: 800; color: #1E293B;">Ôn lại các câu hay sai</div>
+            </div>
+            <div style="font-size: 24px; font-weight: 900; color: #EF4444;" id="mistakesCount">0</div>
+        </div>
+
         <div class="code-section">
             <h2>Vào Phòng Ẩn</h2>
             <p class="subtitle" style="margin-bottom: 20px;">Nhập mã 6 số nếu bài thi không được công khai</p>
@@ -246,10 +257,12 @@
             <div style="font-size: 15px; color: #64748B; margin-top: 5px;" id="reviewScoreText"></div>
         </div>
         
+        <input type="text" id="reviewSearchInput" class="form-input search-input" placeholder="🔍 Tìm kiếm nội dung câu hỏi..." oninput="applyReviewFilters()">
+
         <div class="filter-container">
-            <button class="filter-btn active" onclick="filterReview('all', this)">Tất cả</button>
-            <button class="filter-btn" onclick="filterReview('correct', this)" style="color: #10B981;">✔ Câu Đúng</button>
-            <button class="filter-btn" onclick="filterReview('wrong', this)" style="color: #EF4444;">❌ Câu Sai/Bỏ trống</button>
+            <button class="filter-btn active" data-type="all" onclick="filterReview('all', this)">Tất cả</button>
+            <button class="filter-btn" data-type="correct" onclick="filterReview('correct', this)" style="color: #10B981;">✔ Câu Đúng</button>
+            <button class="filter-btn" data-type="wrong" onclick="filterReview('wrong', this)" style="color: #EF4444;">❌ Câu Sai/Bỏ trống</button>
         </div>
 
         <div id="reviewContainer"></div>
@@ -278,6 +291,7 @@
         let shuffledQuestions = [];
         let globalFolders = {}; 
         let globalExams = [];
+        let currentReviewFilter = 'all'; // Trạng thái bộ lọc hiện tại của phần Review
 
         function shuffleArray(array) {
             const newArr = [...array];
@@ -366,8 +380,6 @@
             container.innerHTML = '';
             for (const [folderId, examsInFolder] of Object.entries(groupedExams)) {
                 const folderName = globalFolders[folderId] || 'Chưa phân loại';
-                
-                // Lấy tên giáo viên từ bài thi đầu tiên trong thư mục (Vì thư mục do 1 GV tạo)
                 const teacherName = examsInFolder[0].teacherName || 'Admin';
                 
                 let examsHtml = '';
@@ -410,6 +422,24 @@
             showStep('step-info');
         }
 
+        // --- BẮT ĐẦU: TÍNH NĂNG LUYỆN TẬP LỖI SAI ---
+        window.startMistakesPractice = function() {
+            let mistakesBank = JSON.parse(localStorage.getItem('mistakes_bank') || '[]');
+            if (mistakesBank.length === 0) return Swal.fire('Thông báo', 'Bạn chưa có câu sai nào!', 'info');
+
+            currentExam = {
+                id: "practice_mistakes",
+                title: "Luyện Tập Lỗi Sai",
+                type: "text",
+                timeLimit: mistakesBank.length * 2, // 2 phút mỗi câu
+                questions: mistakesBank
+            };
+            
+            document.getElementById('examTitleDisplay').innerText = currentExam.title;
+            showStep('step-info');
+        }
+        // --- KẾT THÚC ---
+
         window.onload = () => {
             fetchData();
             document.getElementById('step-room').style.opacity = '1';
@@ -431,6 +461,13 @@
                         </div>
                         <div style="font-size: 24px; font-weight: 900; color: #10B981;">${lastResult.score}đ</div>
                     </div>`;
+            }
+
+            // Hiển thị Banner Góc Luyện Tập nếu có câu sai
+            const mistakesBank = JSON.parse(localStorage.getItem('mistakes_bank') || '[]');
+            if (mistakesBank.length > 0) {
+                document.getElementById('mistakesBanner').style.display = 'flex';
+                document.getElementById('mistakesCount').innerText = mistakesBank.length + " câu";
             }
 
             const sessionStr = localStorage.getItem('exam_active_session');
@@ -513,17 +550,14 @@
             }
         });
 
-        // BẢN NÂNG CẤP: RENDER GIAO DIỆN TÙY CHỌN DỰA VÀO LOẠI ĐỀ
         function renderQuestions() {
             const container = document.getElementById('questionsContainer');
             container.innerHTML = '';
             let draft = JSON.parse(localStorage.getItem('exam_draft_answers') || '{}');
 
             if (currentExam.type === 'pdf') {
-                // =============== GIAO DIỆN PDF ==================
                 document.getElementById('step-exam').classList.add('is-pdf-mode');
                 
-                // Xử lý biến đổi Link YouTube nếu có
                 let embedLink = currentExam.pdfLinkQuestion || '';
                 if (embedLink.includes('youtube.com/watch?v=')) embedLink = embedLink.replace('watch?v=', 'embed/');
                 if (embedLink.includes('youtu.be/')) embedLink = embedLink.replace('youtu.be/', 'youtube.com/embed/');
@@ -550,7 +584,6 @@
                 container.innerHTML = html;
 
             } else {
-                // =============== GIAO DIỆN TEXT ==================
                 document.getElementById('step-exam').classList.remove('is-pdf-mode');
                 let lastPassage = "";
                 
@@ -567,24 +600,68 @@
                     }
 
                     let html = `${passageHtml}<div class="question-card"><div class="question-text">Câu ${index + 1}: ${q.question}</div><div class="options">`;
+                    
+                    // Xử lý render các đáp án
                     ['A', 'B', 'C', 'D'].forEach(opt => {
                         const isChecked = draft[`q_${index}`] === opt ? "checked" : "";
-                        html += `<label class="option-label"><input type="radio" name="q_${index}" value="${opt}" ${isChecked} onchange="saveDraftAnswer(${index}, '${opt}')"> ${opt}. ${q.options[opt]}</label>`;
+                        let extraClass = "";
+                        let pointerEvents = "";
+                        let disabledAttr = "";
+
+                        // Nếu ĐANG LUYỆN TẬP và CÂU NÀY ĐÃ CHỌN ĐÁP ÁN
+                        if (currentExam.id === 'practice_mistakes' && draft[`q_${index}`]) {
+                            extraClass = "opt-disabled";
+                            pointerEvents = "pointer-events: none;";
+                            disabledAttr = "disabled";
+                            
+                            if (opt === q.correctAnswer) {
+                                extraClass += " opt-correct"; // Bôi xanh đáp án đúng
+                            } else if (opt === draft[`q_${index}`] && opt !== q.correctAnswer) {
+                                extraClass += " opt-wrong"; // Bôi đỏ đáp án sai
+                            }
+                        }
+
+                        html += `<label class="option-label ${extraClass}" id="label_${index}_${opt}" style="${pointerEvents}"><input type="radio" name="q_${index}" value="${opt}" ${isChecked} ${disabledAttr} onchange="saveDraftAnswer(${index}, '${opt}')"> ${opt}. ${q.options[opt]}</label>`;
                     });
                     html += `</div></div>`;
                     container.innerHTML += html;
                 });
             }
         }
-
-        // Lưu đáp án cho Đề Text
         window.saveDraftAnswer = function(qIndex, selectedOpt) {
             let draft = JSON.parse(localStorage.getItem('exam_draft_answers') || '{}');
             draft[`q_${qIndex}`] = selectedOpt;
             localStorage.setItem('exam_draft_answers', JSON.stringify(draft));
-        }
 
-        // Lưu đáp án cho Đề PDF
+            // NẾU LÀ CHẾ ĐỘ LUYỆN TẬP LỖI SAI -> HIỂN THỊ KẾT QUẢ NGAY LẬP TỨC
+            if (currentExam && currentExam.id === 'practice_mistakes') {
+                const q = shuffledQuestions[qIndex];
+                const isCorrect = selectedOpt === q.correctAnswer;
+                
+                // Khóa tất cả các lựa chọn của câu này và bôi màu
+                ['A', 'B', 'C', 'D'].forEach(opt => {
+                    const label = document.getElementById(`label_${qIndex}_${opt}`);
+                    if (label) {
+                        label.classList.add('opt-disabled');
+                        label.style.pointerEvents = 'none';
+                        label.querySelector('input').disabled = true;
+
+                        if (opt === q.correctAnswer) {
+                            label.classList.add('opt-correct');
+                        } else if (opt === selectedOpt && !isCorrect) {
+                            label.classList.add('opt-wrong');
+                        }
+                    }
+                });
+
+                // Cập nhật ngân hàng lỗi sai ngay lập tức (Nếu trả lời đúng thì xóa khỏi danh sách yếu)
+                let mistakesBank = JSON.parse(localStorage.getItem('mistakes_bank') || '[]');
+                if (isCorrect) {
+                    mistakesBank = mistakesBank.filter(item => item.question !== q.question);
+                    localStorage.setItem('mistakes_bank', JSON.stringify(mistakesBank));
+                }
+            }
+        }
         window.selectPdfAnswer = function(qIndex, selectedOpt) {
             let draft = JSON.parse(localStorage.getItem('exam_draft_answers') || '{}');
             draft[`q_${qIndex}`] = selectedOpt;
@@ -622,6 +699,7 @@
 
             let draft = JSON.parse(localStorage.getItem('exam_draft_answers') || '{}');
 
+            // Tính điểm và chuẩn bị dữ liệu gửi lên Database
             shuffledQuestions.forEach((q, index) => {
                 const val = draft[`q_${index}`] || null;
                 localAnswers[`q_${index}`] = val; 
@@ -635,6 +713,23 @@
             
             savedAnswers = localAnswers; 
             const finalScore = ((correctCount / totalQ) * 10).toFixed(2);
+
+            // --- XỬ LÝ LƯU CÂU SAI VÀO NGÂN HÀNG (Chỉ đề Text) ---
+            if (currentExam.type !== 'pdf' && currentExam.id !== 'practice_mistakes') {
+                // Chỉ lưu vào ngân hàng lỗi sai khi thi thật. (Vì khi luyện tập đã cập nhật trực tiếp lúc click đáp án rồi)
+                let mistakesBank = JSON.parse(localStorage.getItem('mistakes_bank') || '[]');
+                let mistakesMap = new Map(mistakesBank.map(q => [q.question, q])); 
+                
+                shuffledQuestions.forEach((q, index) => {
+                    const val = draft[`q_${index}`] || null;
+                    if (val !== q.correctAnswer) {
+                        mistakesMap.set(q.question, q); 
+                    }
+                });
+                localStorage.setItem('mistakes_bank', JSON.stringify(Array.from(mistakesMap.values())));
+            }
+            // --- KẾT THÚC XỬ LÝ CÂU SAI ---
+            // --- KẾT THÚC XỬ LÝ CÂU SAI ---
 
             const localResultData = {
                 examType: currentExam.type,
@@ -650,11 +745,14 @@
             localStorage.setItem('exam_last_result', JSON.stringify(localResultData));
 
             try {
-                await addDoc(collection(db, "results"), {
-                    examId: currentExam.id, roomCode: currentExam.roomCode, studentUid: currentStudent.uid, 
-                    studentName: currentStudent.name, studentClass: currentStudent.class, score: parseFloat(finalScore),
-                    correctCount: correctCount, totalQuestions: totalQ, answers: dbAnswers, cheatWarnings: cheatWarnings, submittedAt: serverTimestamp()
-                });
+                // Chỉ gửi kết quả lên Firebase nếu ĐÂY KHÔNG PHẢI là bài làm Luyện tập lỗi sai
+                if (currentExam.id !== 'practice_mistakes') {
+                    await addDoc(collection(db, "results"), {
+                        examId: currentExam.id, roomCode: currentExam.roomCode, studentUid: currentStudent.uid, 
+                        studentName: currentStudent.name, studentClass: currentStudent.class, score: parseFloat(finalScore),
+                        correctCount: correctCount, totalQuestions: totalQ, answers: dbAnswers, cheatWarnings: cheatWarnings, submittedAt: serverTimestamp()
+                    });
+                }
                 
                 localStorage.removeItem('exam_active_session'); localStorage.removeItem('exam_draft_answers');
 
@@ -663,7 +761,6 @@
                 document.getElementById('scoreDisplay').innerText = `${finalScore}/10`;
                 document.getElementById('correctCountDisplay').innerText = `Đúng: ${correctCount} / ${totalQ}`;
                 
-                // Hiển thị Link giải & video nếu có cho Đề PDF
                 if (currentExam.type === 'pdf' && (currentExam.pdfLinkAnswer || currentExam.pdfYoutubeLink)) {
                     document.getElementById('pdfResultAction').style.display = 'block';
                     if (currentExam.pdfLinkAnswer) {
@@ -682,7 +779,6 @@
             } catch (error) { Swal.fire('Lỗi', error.message, 'error'); }
         }
 
-        // HÀM XEM REVIEW
         window.renderReviewUI = function(resultData) {
             document.getElementById('reviewScoreText').innerText = `Điểm: ${resultData.score} | Đúng: ${resultData.correctCount}/${resultData.totalQ}`;
             const container = document.getElementById('reviewContainer');
@@ -699,7 +795,6 @@
                     ? `<span class="badge-result badge-wrong">Chưa chọn</span>` 
                     : `<span class="badge-result ${isCorrect ? 'badge-right' : 'badge-wrong'}">${isCorrect ? 'Đúng' : 'Sai'}</span>`;
                 
-                // Nếu là đề PDF thì lược bớt chữ cho gọn gàng
                 let questionText = resultData.examType === 'pdf' ? `Câu ${index + 1}` : `Câu ${index + 1}: ${q.question}`;
 
                 let html = `<div class="question-card review-item ${statusClass}">${badgeHtml}<div class="question-text">${questionText}</div><div class="options">`;
@@ -713,6 +808,10 @@
                 html += `</div></div>`;
                 container.innerHTML += html;
             });
+            
+            // Xóa nội dung tìm kiếm cũ và kích hoạt lại bộ lọc
+            document.getElementById('reviewSearchInput').value = '';
+            applyReviewFilters();
             showStep('step-review');
         }
 
@@ -734,18 +833,37 @@
             }
         }
 
+        // --- HÀM TÌM KIẾM VÀ LỌC KẾT HỢP TRONG REVIEW ---
         window.filterReview = function(type, btnElement) {
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
+            currentReviewFilter = type; // Lưu lại trạng thái lọc (all, correct, wrong)
+            applyReviewFilters();
+        }
 
+        window.applyReviewFilters = function() {
+            const keyword = document.getElementById('reviewSearchInput').value.toLowerCase().trim();
             const items = document.querySelectorAll('.review-item');
+
             items.forEach(item => {
-                if (type === 'all') item.style.display = 'block';
-                else if (type === 'correct' && item.classList.contains('q-correct')) item.style.display = 'block';
-                else if (type === 'wrong' && item.classList.contains('q-wrong')) item.style.display = 'block';
-                else item.style.display = 'none';
+                const text = item.innerText.toLowerCase();
+                const matchesSearch = text.includes(keyword);
+                let matchesFilter = false;
+
+                // Kiểm tra xem item có khớp với bộ lọc button đang chọn không
+                if (currentReviewFilter === 'all') matchesFilter = true;
+                else if (currentReviewFilter === 'correct' && item.classList.contains('q-correct')) matchesFilter = true;
+                else if (currentReviewFilter === 'wrong' && item.classList.contains('q-wrong')) matchesFilter = true;
+
+                // Phải thỏa mãn cả 2 điều kiện: Chứa từ khóa tìm kiếm VÀ Thuộc danh mục đang lọc
+                if (matchesSearch && matchesFilter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
             });
         }
+        // --- KẾT THÚC HÀM TÌM KIẾM & LỌC ---
 
         document.getElementById('btnBackToResult').addEventListener('click', () => { showStep('step-result'); });
         
