@@ -38,7 +38,6 @@
             background: #F4F7FB; overflow: hidden;
         }
         
-        /* Lớp nhiễu hạt tạo cảm giác vật lý */
         .noise-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
             opacity: 0.035; pointer-events: none;
@@ -64,7 +63,7 @@
         }
 
         /* ========================================= */
-        /* SPLIT SCREEN LAYOUT                       */
+        /* SPLIT SCREEN LAYOUT + SCROLL SNAP         */
         /* ========================================= */
         .app-container { display: flex; height: 100vh; width: 100%; position: relative; z-index: 1; }
 
@@ -72,10 +71,10 @@
         .brand-panel {
             flex: 1.5; position: relative; overflow-y: auto; overflow-x: hidden;
             display: none; scroll-behavior: smooth;
+            scroll-snap-type: y mandatory; 
             padding-top: 32px;
         }
         
-        /* Thanh cuộn tàng hình thanh lịch */
         .brand-panel::-webkit-scrollbar { width: 6px; }
         .brand-panel::-webkit-scrollbar-track { background: transparent; }
         .brand-panel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 10px; }
@@ -83,10 +82,20 @@
         
         @media (min-width: 1024px) { .brand-panel { display: block; } }
 
-        .landing-content { padding: 40px 80px 100px 80px; max-width: 1000px; margin: 0 auto; position: relative; z-index: 10;}
+        .snap-section {
+            scroll-snap-align: start;
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px 80px;
+            max-width: 1160px;
+            margin: 0 auto;
+            position: relative;
+        }
 
         /* ========================================= */
-        /* DYNAMIC ISLAND HEADER                     */
+        /* DYNAMIC ISLAND HEADER (NGUYÊN BẢN GỐC)    */
         /* ========================================= */
         .dynamic-island {
             position: sticky; top: 0; margin: 0 auto 50px auto; width: max-content;
@@ -112,287 +121,266 @@
 
         @keyframes pulseLive { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* Animation Scroll Reveal (Siêu mượt) */
-        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        /* ========================================= */
+        /* ANIMATION SCROLL REVEAL BÊN TRÁI          */
+        /* ========================================= */
+        .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .reveal.active { opacity: 1; transform: translateY(0); }
-        .delay-1 { transition-delay: 0.1s; } .delay-2 { transition-delay: 0.2s; } .delay-3 { transition-delay: 0.3s; }
+        .delay-1 { transition-delay: 0.05s; } .delay-2 { transition-delay: 0.1s; } .delay-3 { transition-delay: 0.15s; }
 
-        /* ========================================= */
-        /* ULTRA GLASS CLASS (Có độ dày vật lý)      */
-        /* ========================================= */
         .glass-card {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
             backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.7);
-            /* Đổ bóng nhiều lớp tạo chiều sâu */
-            box-shadow: 
-                0 10px 30px -10px rgba(0, 0, 0, 0.08),
-                0 20px 40px -20px rgba(0, 122, 255, 0.05),
-                inset 0 1px 0 rgba(255,255,255,1),
-                inset 0 -1px 0 rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255,255,255,1);
             border-radius: 36px;
         }
 
-        /* --- Hero Section --- */
-        .hero-section { min-height: 65vh; display: flex; flex-direction: column; justify-content: center; margin-bottom: 60px; }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 30px;
-            background: rgba(255, 255, 255, 0.5); color: #1D1D1F; font-size: 13px; font-weight: 700; 
-            margin-bottom: 28px; border: 1px solid rgba(255, 255, 255, 0.8); width: fit-content;
-            backdrop-filter: blur(20px); box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-        }
+        .hero-section { display: flex; flex-direction: column; justify-content: center; margin-bottom: 40px; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 30px; background: rgba(255, 255, 255, 0.5); color: #1D1D1F; font-size: 13px; font-weight: 700; margin-bottom: 24px; border: 1px solid rgba(255, 255, 255, 0.8); width: fit-content; backdrop-filter: blur(20px); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
         .hero-badge span { background: linear-gradient(135deg, #007AFF, #AF52DE); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;}
-        
-        .hero-section h1 { font-size: 72px; font-weight: 900; line-height: 1.02; margin-bottom: 24px; letter-spacing: -3px; color: #1D1D1F;}
-        .text-gradient { 
-            background: linear-gradient(100deg, #007AFF 0%, #AF52DE 50%, #FF9500 100%); 
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-            background-size: 200% auto; animation: shineText 5s linear infinite;
-        }
+        .hero-section h1 { font-size: 72px; font-weight: 900; line-height: 1.02; margin-bottom: 20px; letter-spacing: -3px; color: #1D1D1F;}
+        .text-gradient { background: linear-gradient(100deg, #007AFF 0%, #AF52DE 50%, #FF9500 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; animation: shineText 5s linear infinite;}
         @keyframes shineText { to { background-position: 200% center; } }
-        
-        .hero-section p { font-size: 20px; line-height: 1.6; color: #48484A; margin-bottom: 48px; font-weight: 500; max-width: 650px; }
-        
+        .hero-section p { font-size: 20px; line-height: 1.6; color: #48484A; margin-bottom: 40px; font-weight: 500; max-width: 650px; }
         .trusted-by { font-size: 13px; color: #8E8E93; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 16px;}
         .trusted-avatars { display: flex; }
         .trusted-avatars img { width: 36px; height: 36px; border-radius: 50%; border: 3px solid #FFFFFF; margin-left: -12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); object-fit: cover; background: #E5E5EA;}
         .trusted-avatars img:first-child { margin-left: 0; }
 
-        /* --- Stats Section --- */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 100px; padding-bottom: 60px; border-bottom: 1px solid rgba(0,0,0,0.04); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 20px; }
         .stat-item h3 { font-size: 48px; font-weight: 900; color: #1D1D1F; letter-spacing: -2px; margin-bottom: 4px; }
         .stat-item p { font-size: 14px; color: #86868B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* --- Global Section Headers --- */
         .section-title { font-size: 42px; font-weight: 900; margin-bottom: 16px; letter-spacing: -1.5px; text-align: center; color: #1D1D1F;}
-        .section-subtitle { font-size: 18px; color: #636366; text-align: center; margin-bottom: 64px; font-weight: 500; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;}
+        .section-subtitle { font-size: 18px; color: #636366; text-align: center; margin-bottom: 48px; font-weight: 500; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;}
 
-        /* --- How it works --- */
-        .steps-container { display: flex; gap: 28px; margin-bottom: 140px;}
-        .step-card { flex: 1; padding: 48px 32px; text-align: center; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); z-index: 2;}
-        .step-card:hover { transform: translateY(-12px); box-shadow: 0 30px 60px rgba(0,122,255,0.08), inset 0 1px 0 rgba(255,255,255,1); background: rgba(255,255,255,0.8);}
-        
-        .step-num { 
-            width: 56px; height: 56px; background: #FFFFFF; color: #1D1D1F; border-radius: 20px; 
-            display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; 
-            margin: 0 auto 32px auto; transition: 0.4s; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.06), inset 0 -2px 5px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02);
-        }
-        .step-card:hover .step-num { background: #007AFF; color: white; box-shadow: 0 15px 30px rgba(0,122,255,0.3); transform: scale(1.1) rotate(5deg);}
-        
+        .steps-container { display: flex; gap: 28px;}
+        .step-card { flex: 1; padding: 48px 32px; text-align: center; transition: all 0.4s ease; z-index: 2;}
+        .step-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(0,122,255,0.06), inset 0 1px 0 rgba(255,255,255,1); background: rgba(255,255,255,0.8);}
+        .step-num { width: 56px; height: 56px; background: #FFFFFF; color: #1D1D1F; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; margin: 0 auto 24px auto; transition: 0.3s; box-shadow: 0 10px 25px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.02);}
+        .step-card:hover .step-num { background: #007AFF; color: white; transform: scale(1.05);}
         .step-card h4 { font-size: 22px; font-weight: 800; margin-bottom: 12px; color: #1D1D1F; letter-spacing: -0.5px;}
         .step-card p { font-size: 16px; color: #636366; line-height: 1.6; font-weight: 500;}
 
-        /* --- Features Section --- */
-        .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; margin-bottom: 140px; }
-        .feature-card { padding: 48px; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255,255,255,1); background: rgba(255,255,255,0.8); }
-        
-        .fc-icon { 
-            width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; 
-            margin-bottom: 32px; box-shadow: 0 12px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1); border: 1px solid rgba(255,255,255,0.5);
-        }
+        .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; }
+        .feature-card { padding: 40px; transition: all 0.4s ease; }
+        .feature-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06); background: rgba(255,255,255,0.8); }
+        .fc-icon { width: 60px; height: 60px; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.5);}
         .fc-icon.blue { background: #F0F7FF; color: #007AFF; }
         .fc-icon.green { background: #F0FDF4; color: #34C759; }
         .fc-icon.orange { background: #FFF9F0; color: #FF9500; }
         .fc-icon.purple { background: #F9F0FF; color: #AF52DE; }
-        
-        .feature-card h4 { font-size: 24px; color: #1D1D1F; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px;}
-        .feature-card p { font-size: 17px; color: #636366; font-weight: 500; line-height: 1.6; }
+        .feature-card h4 { font-size: 24px; color: #1D1D1F; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px;}
+        .feature-card p { font-size: 16px; color: #636366; font-weight: 500; line-height: 1.5; }
 
-        /* --- Pricing Section --- */
-        .pricing-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin-bottom: 140px; align-items: center;}
-        .pricing-card { padding: 56px 48px; display: flex; flex-direction: column; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        .pricing-card:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(0,0,0,0.08); background: rgba(255,255,255,0.8);}
-        
-        .pricing-card.vip { 
-            border: 1px solid rgba(0, 122, 255, 0.4); 
-            box-shadow: 0 30px 60px rgba(0,122,255,0.15), inset 0 0 40px rgba(255,255,255,0.8), inset 0 1px 0 rgba(255,255,255,1); 
-            position: relative; 
-            background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%); 
-            transform: scale(1.05); z-index: 10;
-        }
-        .pricing-card.vip:hover { transform: scale(1.05) translateY(-8px); box-shadow: 0 40px 80px rgba(0,122,255,0.2); }
-        .vip-badge { 
-            position: absolute; top: -16px; left: 50%; transform: translateX(-50%); 
-            background: linear-gradient(135deg, #007AFF, #AF52DE); color: white; 
-            padding: 8px 24px; border-radius: 30px; font-size: 13px; font-weight: 800; text-transform: uppercase; 
-            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3); letter-spacing: 1px;
-        }
-        
-        .pricing-card h3 { font-size: 26px; font-weight: 900; margin-bottom: 8px; color: #1D1D1F;}
-        .price { font-size: 56px; font-weight: 900; margin-bottom: 32px; color: #1D1D1F; letter-spacing: -2.5px;}
-        .price span { font-size: 20px; color: #8E8E93; font-weight: 600; letter-spacing: 0;}
-        
-        .feature-list-price { margin-bottom: 48px; flex: 1;}
-        .feature-list-price li { list-style: none; margin-bottom: 20px; font-size: 17px; color: #48484A; font-weight: 600; display: flex; align-items: center; gap: 16px;}
-        
-        /* Custom Checkmark Icon */
-        .check-icon { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(52, 199, 89, 0.15); color: #34C759; flex-shrink: 0;}
+        .pricing-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; align-items: center;}
+        .pricing-card { padding: 48px 40px; display: flex; flex-direction: column; transition: all 0.4s ease; }
+        .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.06); background: rgba(255,255,255,0.8);}
+        .pricing-card.vip { border: 1px solid rgba(0, 122, 255, 0.3); box-shadow: 0 25px 50px rgba(0,122,255,0.1), inset 0 1px 0 rgba(255,255,255,1); position: relative; background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%); transform: scale(1.03); z-index: 10;}
+        .pricing-card.vip:hover { transform: scale(1.03) translateY(-6px); box-shadow: 0 30px 60px rgba(0,122,255,0.15); }
+        .vip-badge { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #007AFF, #AF52DE); color: white; padding: 6px 20px; border-radius: 30px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
+        .pricing-card h3 { font-size: 24px; font-weight: 900; margin-bottom: 8px; color: #1D1D1F;}
+        .price { font-size: 52px; font-weight: 900; margin-bottom: 24px; color: #1D1D1F; letter-spacing: -2px;}
+        .price span { font-size: 18px; color: #8E8E93; font-weight: 600; letter-spacing: 0;}
+        .feature-list-price { margin-bottom: 40px; flex: 1;}
+        .feature-list-price li { list-style: none; margin-bottom: 16px; font-size: 16px; color: #48484A; font-weight: 600; display: flex; align-items: center; gap: 16px;}
+        .check-icon { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(52, 199, 89, 0.15); color: #34C759; flex-shrink: 0;}
         .pricing-card.vip .check-icon { background: rgba(0, 122, 255, 0.15); color: #007AFF;}
-        
-        .btn-pricing { padding: 20px; border-radius: 24px; border: none; font-weight: 800; font-size: 17px; cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 100%;}
-        .btn-free { background: #FFFFFF; color: #1D1D1F; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 15px rgba(0,0,0,0.03);}
-        .btn-free:hover { background: #F8FAFC; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06);}
-        .btn-vip { background: #007AFF; color: white; box-shadow: 0 12px 24px rgba(0,122,255,0.3); position: relative; overflow: hidden;}
-        .btn-vip::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-20deg); animation: shine 4s infinite; }
-        .btn-vip:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 20px 40px rgba(0,122,255,0.4); background: #0066D6;}
-        .btn-vip:active { transform: scale(0.98); }
+        .btn-pricing { padding: 18px; border-radius: 20px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.3s ease; width: 100%;}
+        .btn-free { background: #FFFFFF; color: #1D1D1F; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 10px rgba(0,0,0,0.02);}
+        .btn-free:hover { background: #F8FAFC; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.04);}
+        .btn-vip { background: #007AFF; color: white; box-shadow: 0 10px 20px rgba(0,122,255,0.2); }
+        .btn-vip:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(0,122,255,0.3); background: #0066D6;}
 
-        /* --- FAQ Section --- */
-        .faq-section { margin-bottom: 140px; max-width: 800px; margin-left: auto; margin-right: auto;}
-        .faq-item { margin-bottom: 20px; border: 1px solid transparent; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
-        .faq-question { padding: 28px 36px; font-size: 18px; font-weight: 800; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #1D1D1F;}
-        .faq-icon { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); color: #8E8E93; background: #FFFFFF; border-radius: 50%; padding: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
-        .faq-answer { max-height: 0; padding: 0 36px; opacity: 0; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); color: #636366; font-size: 17px; line-height: 1.6; font-weight: 500;}
-        
+        .faq-section { max-width: 800px; margin: 0 auto 60px auto;}
+        .faq-item { margin-bottom: 16px; border: 1px solid transparent; transition: all 0.4s ease; overflow: hidden; }
+        .faq-question { padding: 24px 32px; font-size: 17px; font-weight: 800; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #1D1D1F;}
+        .faq-icon { transition: transform 0.4s ease; color: #8E8E93; background: #FFFFFF; border-radius: 50%; padding: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+        .faq-answer { max-height: 0; padding: 0 32px; opacity: 0; transition: all 0.4s ease; color: #636366; font-size: 16px; line-height: 1.6; font-weight: 500;}
         .faq-item:hover { background: rgba(255,255,255,0.6); }
-        .faq-item.active { border-color: rgba(255,255,255,0.8); box-shadow: 0 15px 40px rgba(0,0,0,0.06); background: rgba(255,255,255,0.95);}
+        .faq-item.active { border-color: rgba(255,255,255,0.8); box-shadow: 0 10px 30px rgba(0,0,0,0.04); background: rgba(255,255,255,0.95);}
         .faq-item.active .faq-icon { transform: rotate(180deg); color: #FFFFFF; background: #1D1D1F;}
-        .faq-item.active .faq-answer { max-height: 300px; padding-bottom: 36px; opacity: 1; margin-top: -10px;}
+        .faq-item.active .faq-answer { max-height: 300px; padding-bottom: 24px; opacity: 1; margin-top: -5px;}
 
-        /* --- Footer CTA --- */
-        .cta-section { text-align: center; padding: 80px 40px; background: linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(175, 82, 222, 0.08)); border-radius: 48px; color: #1D1D1F; position: relative; border: 1px solid rgba(255,255,255,0.8); backdrop-filter: blur(30px); box-shadow: inset 0 0 40px rgba(255,255,255,0.5);}
-        .cta-section h2 { font-size: 42px; margin-bottom: 20px; font-weight: 900; letter-spacing: -1.5px; }
-        .cta-btn { background: #1D1D1F; color: #FFFFFF; padding: 22px 48px; border-radius: 32px; font-size: 18px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 15px 30px rgba(0,0,0,0.2); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);}
-        .cta-btn:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 25px 50px rgba(0,0,0,0.3); background: #000000; }
-        .cta-btn:active { transform: scale(0.98); }
+        .cta-section { text-align: center; padding: 60px 40px; background: linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(175, 82, 222, 0.08)); border-radius: 40px; color: #1D1D1F; position: relative; border: 1px solid rgba(255,255,255,0.8); backdrop-filter: blur(30px); margin-bottom: 20px;}
+        .cta-section h2 { font-size: 36px; margin-bottom: 16px; font-weight: 900; letter-spacing: -1px; }
+        .cta-btn { background: #1D1D1F; color: #FFFFFF; padding: 20px 40px; border-radius: 30px; font-size: 17px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.15); transition: all 0.3s ease;}
+        .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.2); background: #000000; }
 
         /* ========================================= */
-        /* BẢNG PHẢI: FORM ĐĂNG NHẬP (TÂM ĐIỂM)      */
+        /* BẢNG PHẢI: FORM ĐĂNG NHẬP WATER DROP      */
         /* ========================================= */
         .auth-panel {
             flex: 1; display: flex; justify-content: center; align-items: center;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%);
-            backdrop-filter: blur(50px) saturate(180%); -webkit-backdrop-filter: blur(50px) saturate(180%);
-            position: relative; height: 100vh; overflow-y: auto;
-            border-left: 1px solid rgba(255,255,255,0.6); z-index: 50;
+            position: relative; height: 100vh; overflow-y: auto; z-index: 50;
+            border-left: 1px solid rgba(255,255,255,0.6);
+            background: transparent; 
         }
         
         .auth-card { 
-            width: 100%; max-width: 460px; padding: 56px; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            background: rgba(255, 255, 255, 0.75); 
-            backdrop-filter: blur(60px) saturate(200%); -webkit-backdrop-filter: blur(60px) saturate(200%);
-            border-radius: 48px; border: 1px solid rgba(255,255,255,0.9);
-            box-shadow: 
-                0 30px 60px -15px rgba(0,0,0,0.1), 
-                0 0 0 1px rgba(255,255,255,0.5) inset;
-        }
-        .auth-card.highlight { transform: scale(1.03); box-shadow: 0 0 0 6px rgba(0,122,255,0.2), 0 40px 80px rgba(0,0,0,0.15); }
-
-        /* --- MOBILE LAYOUT --- */
-        @media (max-width: 1024px) {
-            body { overflow: auto; } 
-            .app-container { height: auto; flex-direction: column; overflow: visible; }
-            .orb { filter: blur(60px); }
-            .orb-1 { width: 350px; height: 350px; top: -5%; left: -10%;}
-            .orb-2 { width: 350px; height: 350px; bottom: 0; right: -10%;}
-
-            .auth-panel { 
-                background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; flex: none; width: 100%; height: auto; min-height: 100vh;
-                order: 1; z-index: 10; padding: 24px; border-left: none; align-items: flex-start;
-            }
-            .auth-card { margin-top: 4vh; padding: 40px 24px; border-radius: 40px; background: rgba(255,255,255,0.85); }
-
-            .brand-panel { display: block; width: 100%; order: 2; overflow: visible; background: transparent; padding-top: 0;}
-            .dynamic-island { display: none; } 
-            
-            .landing-content { padding: 40px 20px; }
-            .hero-section { min-height: auto; text-align: center; align-items: center; margin-bottom: 80px;}
-            .hero-section h1 { font-size: 48px; }
-            .hero-section p { font-size: 17px; }
-            .trusted-by { justify-content: center; }
-            .stats-grid { grid-template-columns: 1fr; gap: 24px; text-align: center; margin-bottom: 80px;}
-            .steps-container { flex-direction: column; gap: 24px; margin-bottom: 80px;}
-            .features-grid, .pricing-grid { grid-template-columns: 1fr; gap: 24px; margin-bottom: 80px;}
-            .pricing-card.vip { transform: scale(1); } .pricing-card.vip:hover { transform: translateY(-4px); }
+            width: 460px; height: 460px; 
+            position: relative;
+            background: transparent;
+            box-shadow:
+                inset 20px 20px 20px rgba(0, 0, 0, .05),
+                5px 25px 20px rgba(0, 0, 0, .05),
+                5px 20px 30px rgba(0, 0, 0, .05),
+                inset -20px -20px 25px rgba(255, 255, 255, .9);
+            border-radius: 61% 39% 52% 48% / 44% 59% 41% 56%;
+            transition: .5s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* --- Auth Card Elements --- */
-        .mobile-logo { display: none; width: 72px; height: 72px; margin: 0 auto 32px auto; background: linear-gradient(135deg, #E5F0FF, #FFFFFF); border-radius: 24px; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,122,255,0.15), inset 0 1px 0 rgba(255,255,255,1); border: 1px solid rgba(0,122,255,0.1); }
-        .mobile-logo svg { width: 36px; height: 36px; fill: #007AFF;}
+        .auth-card:hover { 
+            border-radius: 50%; 
+            transform: translateY(-5px); 
+        }
+        .auth-card.highlight { transform: scale(1.03); }
+
+        .auth-card::before {
+            content: ''; position: absolute; top: 15%; left: 20%;
+            width: 35px; height: 35px; background: #fff; border-radius: 50%; opacity: .9; pointer-events: none;
+        }
+        .auth-card::after {
+            content: ''; position: absolute; top: 25%; left: 28%;
+            width: 15px; height: 15px; background: #fff; border-radius: 50%; opacity: .9; pointer-events: none;
+        }
+
+        .auth-card-content {
+            position: relative;
+            z-index: 2;
+            width: 85%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-origin: center;
+        }
+
+        .mobile-logo { display: none; width: 64px; height: 64px; margin: 0 auto 20px auto; background: linear-gradient(135deg, #E5F0FF, #FFFFFF); border-radius: 20px; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,122,255,0.15), inset 0 1px 0 rgba(255,255,255,1); border: 1px solid rgba(0,122,255,0.1); }
+        .mobile-logo svg { width: 30px; height: 30px; fill: #007AFF;}
         @media (max-width: 1024px) { .mobile-logo { display: flex; } }
-
-        .auth-header { margin-bottom: 40px; text-align: left; }
-        @media (max-width: 1024px) { .auth-header { text-align: center; } }
-        .auth-header h2 { font-size: 32px; font-weight: 900; color: #1D1D1F; margin-bottom: 10px; letter-spacing: -1.5px;}
-        .auth-header p { font-size: 16px; color: #86868B; font-weight: 600;}
-
-        /* --- ROLE BUTTONS (SIÊU MƯỢT) --- */
-        .role-options { display: flex; flex-direction: column; gap: 20px; }
+        
+        .auth-header { margin-bottom: 24px; text-align: center; width: 100%;}
+        .auth-header h2 { font-size: 28px; font-weight: 900; color: #1D1D1F; margin-bottom: 5px; letter-spacing: -1px;}
+        .auth-header p { font-size: 15px; color: #86868B; font-weight: 600;}
+        
+        .role-options { display: flex; flex-direction: column; gap: 16px; width: 100%; align-items: center;}
+        
         .role-btn { 
-            display: flex; align-items: center; padding: 24px; border-radius: 28px; 
+            display: flex; align-items: center; padding: 16px 20px; border-radius: 28px; 
             border: 1px solid rgba(255,255,255,0.8); background: rgba(255,255,255,0.6); 
-            cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-            position: relative; overflow: hidden; text-align: left; 
+            cursor: pointer; transition: all 0.4s ease; position: relative; overflow: hidden; text-align: left; 
+            width: 100%; max-width: 320px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.02);
         }
-        .role-btn:hover { 
-            background: rgba(255,255,255,1); transform: translateY(-3px) scale(1.01); 
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08); border-color: #FFFFFF;
-        }
-        .role-btn:active { transform: scale(0.97); }
+        .role-btn:hover { background: rgba(255,255,255,1); transform: translateY(-3px) scale(1.01); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); border-color: #FFFFFF;}
         
-        .role-icon { 
-            width: 56px; height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; 
-            margin-right: 20px; flex-shrink: 0; background: #FFFFFF; box-shadow: 0 6px 15px rgba(0,0,0,0.06); transition: transform 0.4s; 
-        }
-        .role-btn:hover .role-icon { transform: scale(1.1) rotate(-5deg); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .role-icon { width: 48px; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin-right: 16px; flex-shrink: 0; background: #FFFFFF; box-shadow: 0 6px 15px rgba(0,0,0,0.06); transition: transform 0.4s; }
+        .role-btn:hover .role-icon { transform: scale(1.1) rotate(-5deg); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
         
         .role-text { flex: 1; }
-        .role-text h3 { font-size: 19px; font-weight: 800; color: #1D1D1F; margin-bottom: 4px; letter-spacing: -0.3px;}
-        .role-text span { font-size: 15px; color: #8E8E93; font-weight: 600; }
-        .role-arrow { color: #D1D1D6; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; }
+        .role-text h3 { font-size: 17px; font-weight: 800; color: #1D1D1F; margin-bottom: 2px; }
+        .role-text span { font-size: 13px; color: #8E8E93; font-weight: 600; }
+        .role-arrow { color: #D1D1D6; transition: all 0.4s ease; display: flex; align-items: center; }
         .role-btn:hover .role-arrow { color: #1D1D1F; transform: translateX(6px); }
         
-        /* Chỉnh riêng nút học sinh */
         .student-btn { background: rgba(0, 122, 255, 0.03); border: 1px solid rgba(0, 122, 255, 0.1); }
-        .student-btn:hover { background: #FFFFFF; border-color: rgba(0, 122, 255, 0.3); box-shadow: 0 15px 35px rgba(0, 122, 255, 0.12); }
+        .student-btn:hover { background: #FFFFFF; border-color: rgba(0, 122, 255, 0.3); box-shadow: 0 10px 25px rgba(0, 122, 255, 0.12); }
         .student-btn .role-icon { color: #007AFF; }
         .student-btn .role-text h3 { color: #007AFF; }
         .student-btn:hover .role-arrow { color: #007AFF; }
-
-        .auth-footer { margin-top: 40px; text-align: center; }
-        .auth-footer p { font-size: 14px; color: #8E8E93; font-weight: 600; }
+        
+        .auth-footer { margin-top: 30px; text-align: center; }
+        .auth-footer p { font-size: 13px; color: #8E8E93; font-weight: 600; }
 
         /* ========================================= */
-        /* VIP MODAL HIỆN ĐẠI (iOS Settings Style)   */
+        /* --- MOBILE LAYOUT FIX ---                 */
         /* ========================================= */
+        @media (max-width: 1024px) {
+            body { overflow-y: auto !important; overflow-x: hidden; } 
+            .app-container { height: auto; flex-direction: column; overflow: visible; }
+            
+            /* Khôi phục và đảm bảo Panel Trái luôn hiển thị phía dưới */
+            .brand-panel { 
+                display: block !important; 
+                width: 100%; 
+                order: 2; /* Sắp xếp xuống dưới form đăng nhập */
+                overflow: visible !important; 
+                padding-top: 0;
+                scroll-snap-type: none !important; /* Tắt hít mượt mà hơn trên đt */
+                height: auto;
+            }
+            .dynamic-island { display: none; }
+            
+            /* Tùy chỉnh panel Phải (Form đăng nhập) lên trên cùng */
+            .auth-panel { 
+                order: 1; 
+                width: 100%;
+                border-left: none; padding: 24px 10px; align-items: center; 
+                height: auto; min-height: 100vh;
+            }
+
+            /* Thu nhỏ kích thước khung giọt nước */
+            .auth-card { 
+                width: 360px; height: 360px; 
+                margin: 0 auto; 
+                background: transparent; 
+            }
+            
+            /* Dùng phép biến đổi tỉ lệ (Scale) để chữ lọt thỏm hoàn toàn vào giọt nước */
+            .auth-card-content {
+                transform: scale(0.75);
+                width: 100%;
+            }
+
+            /* Tinh chỉnh các thành phần Landing Page bên trái cho Mobile */
+            .snap-section { min-height: auto; padding: 40px 20px; scroll-snap-align: none; }
+            .hero-section h1 { font-size: 42px; }
+            .hero-section p { font-size: 16px; }
+            
+            .stats-grid, .steps-container, .features-grid, .pricing-grid { 
+                grid-template-columns: 1fr; 
+                flex-direction: column; 
+                align-items: center; 
+                display: flex;
+            }
+            .step-card, .feature-card, .pricing-card { 
+                width: 100%; 
+                max-width: 340px; 
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Dành cho các thiết bị di động có màn hình siêu nhỏ (vd: iPhone SE) */
+        @media (max-width: 380px) {
+            .auth-card { width: 310px; height: 310px; }
+            .auth-card-content { transform: scale(0.72); }
+            .hero-section h1 { font-size: 36px; }
+        }
+
+        /* --- VIP MODAL (Giữ nguyên) --- */
         .vip-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.4s ease; }
         .vip-modal-overlay.active { display: flex; opacity: 1; }
-        
-        .vip-modal-content { 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%); 
-            width: 90%; max-width: 420px; padding: 40px 32px; border-radius: 40px; text-align: center; 
-            box-shadow: 0 30px 80px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,1); border: 1px solid rgba(255,255,255,0.8); 
-            max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(30px) scale(0.95); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
-        }
+        .vip-modal-content { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(50px) saturate(200%); -webkit-backdrop-filter: blur(50px) saturate(200%); width: 90%; max-width: 420px; padding: 40px 32px; border-radius: 40px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(30px) scale(0.95); transition: all 0.4s ease; }
         .vip-modal-overlay.active .vip-modal-content { transform: translateY(0) scale(1); }
-        
         .vip-icon { font-size: 56px; margin-bottom: 16px; display: inline-block; filter: drop-shadow(0 8px 16px rgba(255,149,0,0.4)); transform: scale(1.1);}
         .vip-modal-content h2 { font-size: 28px; font-weight: 900; color: #1D1D1F; margin-bottom: 10px; letter-spacing: -1px;}
-        
         .price-container { margin-bottom: 28px; }
         .qr-container { background: #FFFFFF; padding: 20px; border-radius: 28px; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 28px; display: inline-block; box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
         .qr-container img { width: 100%; max-width: 220px; height: auto; display: block; border-radius: 16px; }
-        
         .bank-info { text-align: left; display: flex; flex-direction: column; gap: 14px; background: #F2F2F7; padding: 20px; border-radius: 28px; border: 1px solid rgba(0,0,0,0.03); box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);}
-        .copy-box { background: #FFFFFF; padding: 18px 24px; border-radius: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03);}
+        .copy-box { background: #FFFFFF; padding: 18px 24px; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03);}
         .copy-box:hover { background: #FFFFFF; transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.08); color: #007AFF;}
-        .copy-box:active { transform: scale(0.96); }
         .copy-left { display: flex; flex-direction: column; gap: 6px; }
         .copy-label { font-size: 13px; color: #8E8E93; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
         .copy-value { font-size: 18px; color: #1D1D1F; font-weight: 800; transition: color 0.3s;}
-        .copy-box:hover .copy-value { color: #007AFF; }
         .copy-icon { color: #8E8E93; font-size: 20px; transition: color 0.3s;}
-        .copy-box:hover .copy-icon { color: #007AFF; }
-        
         .btn-close { background: #E5E5EA; border: none; color: #1D1D1F; font-weight: 800; font-size: 17px; padding: 20px; cursor: pointer; margin-top: 28px; width: 100%; border-radius: 24px; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.02);}
         .btn-close:hover { background: #D1D1D6; transform: translateY(-2px);}
-        .btn-close:active { transform: scale(0.98); }
         .discount-badge { background: #FF3B30; color: #FFFFFF; padding: 6px 12px; border-radius: 12px; font-size: 14px; font-weight: 800; margin-left: 8px; vertical-align: middle; box-shadow: 0 4px 10px rgba(255,59,48,0.3);}
-
-        /* Override SweetAlert Glass Style */
         .glass-alert { background: rgba(255,255,255,0.9) !important; backdrop-filter: blur(40px) saturate(200%) !important; border-radius: 32px !important; border: 1px solid rgba(255,255,255,0.9) !important; box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;}
         div:where(.swal2-container) h2:where(.swal2-title) { color: #1D1D1F !important; font-family: 'Inter', sans-serif !important; font-weight: 900 !important; letter-spacing: -0.5px !important;}
         div:where(.swal2-container) .swal2-html-container { font-weight: 500 !important; color: #48484A !important;}
@@ -400,18 +388,8 @@
 </head>
 <body>
 
-    <!-- Lớp nhiễu hạt vật lý -->
     <div class="noise-overlay"></div>
 
-    <!-- Gradient cho Logo SVG -->
-    <svg width="0" height="0" style="position: absolute;">
-        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop stop-color="#5AC8FA" offset="0%" />
-            <stop stop-color="#007AFF" offset="100%" />
-        </linearGradient>
-    </svg>
-
-    <!-- NỀN MESH GRADIENT GLOBAL -->
     <div class="global-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -421,10 +399,8 @@
 
     <div class="app-container">
         
-        <!-- NỬA TRÁI (LANDING PAGE) -->
         <div class="brand-panel" id="scrollContainer">
             
-            <!-- DYNAMIC ISLAND HEADER -->
             <div class="dynamic-island">
                 <div class="di-logo-group">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -442,14 +418,11 @@
                 </div>
             </div>
 
-            <div class="landing-content">
-
-                <!-- Hero Section -->
+            <section class="snap-section" id="hero">
                 <div class="hero-section reveal delay-1">
                     <div class="hero-badge"><span>●</span> Trải nghiệm Version 2.0</div>
                     <h1>Nền tảng giáo dục<br><span class="text-gradient">Không giới hạn.</span></h1>
                     <p>Khám phá hệ thống thi trắc nghiệm mượt mà nhất. Chấm điểm tự động, phân tích chi tiết và giao diện kính mờ đột phá chuẩn Apple.</p>
-                    
                     <div class="trusted-by">
                         <div class="trusted-avatars">
                             <img src="https://ui-avatars.com/api/?name=Teacher+A&background=random&color=fff" alt="Avatar">
@@ -460,28 +433,17 @@
                         Lựa chọn của 500+ Giáo viên ưu tú
                     </div>
                 </div>
-
-                <!-- Stats -->
                 <div class="stats-grid reveal delay-2">
-                    <div class="stat-item">
-                        <h3>10K+</h3>
-                        <p>Lượt làm bài</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>99.9%</h3>
-                        <p>Uptime Hệ thống</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>0.5s</h3>
-                        <p>Thời gian chấm</p>
-                    </div>
+                    <div class="stat-item"><h3>10K+</h3><p>Lượt làm bài</p></div>
+                    <div class="stat-item"><h3>99.9%</h3><p>Uptime Hệ thống</p></div>
+                    <div class="stat-item"><h3>0.5s</h3><p>Thời gian chấm</p></div>
                 </div>
+            </section>
 
-                <!-- How It Works Section -->
-                <div class="reveal" id="howitworks">
+            <section class="snap-section" id="howitworks">
+                <div class="reveal">
                     <h2 class="section-title">Làm việc thông minh hơn</h2>
                     <p class="section-subtitle">Tối ưu hóa thời gian của bạn với quy trình 3 bước hoàn toàn tự động, tạm biệt những xấp giấy chấm thủ công.</p>
-                    
                     <div class="steps-container">
                         <div class="step-card glass-card reveal delay-1">
                             <div class="step-num">1</div>
@@ -500,255 +462,178 @@
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Features Section -->
-                <div class="features-section reveal" id="features">
+            <section class="snap-section" id="features">
+                <div class="reveal">
                     <h2 class="section-title">Tính năng đỉnh cao</h2>
                     <p class="section-subtitle">Được thiết kế tỉ mỉ từng pixel, mang lại trải nghiệm tương đương các ứng dụng cao cấp nhất thế giới.</p>
-
                     <div class="features-grid">
                         <div class="feature-card glass-card reveal delay-1">
-                            <div class="fc-icon blue">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
-                            </div>
+                            <div class="fc-icon blue"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg></div>
                             <h4>Đề thi PDF & Text</h4>
                             <p>Hỗ trợ tạo đề Text tự động đảo câu, hoặc Import Đề dạng PDF split-screen tiên tiến hiển thị song song phiếu tô trắc nghiệm.</p>
                         </div>
-
                         <div class="feature-card glass-card reveal delay-2">
-                            <div class="fc-icon green">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            </div>
+                            <div class="fc-icon green"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                             <h4>Chấm điểm Realtime</h4>
                             <p>Trả kết quả ngay lập tức không độ trễ. Cung cấp bộ lọc xem lại câu đúng/sai cực kỳ trực quan sau khi thi xong.</p>
                         </div>
-
                         <div class="feature-card glass-card reveal delay-1">
-                            <div class="fc-icon orange">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            </div>
+                            <div class="fc-icon orange"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
                             <h4>Góc ôn luyện Thông minh</h4>
                             <p>Khác biệt hoàn toàn: Hệ thống tự động gom các câu trả lời sai thành một đề luyện tập độc lập để học sinh khắc phục lỗi.</p>
                         </div>
-
                         <div class="feature-card glass-card reveal delay-2">
-                            <div class="fc-icon purple">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            </div>
+                            <div class="fc-icon purple"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
                             <h4>Chống gian lận tuyệt đối</h4>
                             <p>Theo dõi Realtime: Cảnh báo và tự động ghi nhận vào biên bản ngay lập tức khi học sinh chuyển tab hoặc thoát màn hình.</p>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Pricing Section -->
-                <div class="reveal" id="pricing">
+            <section class="snap-section" id="pricing">
+                <div class="reveal">
                     <h2 class="section-title">Nâng cấp trải nghiệm</h2>
                     <p class="section-subtitle">Đầu tư một lần, sử dụng thả ga. Mở khóa toàn bộ quyền năng quản lý dành riêng cho bạn.</p>
-                    
                     <div class="pricing-grid">
                         <div class="pricing-card glass-card reveal delay-1">
                             <h3>Cơ bản</h3>
                             <div class="price">Miễn phí</div>
                             <ul class="feature-list-price">
-                                <li>
-                                    <div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    Thi ẩn danh không cần tài khoản
-                                </li>
-                                <li>
-                                    <div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    Xem điểm & chữa bài tự động
-                                </li>
-                                <li>
-                                    <div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    Góc ôn tập cơ bản
-                                </li>
+                                <li><div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>Thi ẩn danh không cần tài khoản</li>
+                                <li><div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>Xem điểm & chữa bài tự động</li>
+                                <li><div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>Góc ôn tập cơ bản</li>
                             </ul>
                             <button class="btn-pricing btn-free" onclick="focusAuthForm()">Tham gia phòng thi</button>
                         </div>
-
                         <div class="pricing-card glass-card vip reveal delay-2">
                             <div class="vip-badge">Tốt nhất cho Giáo viên</div>
                             <h3>Gói VIP</h3>
                             <div class="price">50k<span>/tháng</span></div>
                             <ul class="feature-list-price">
-                                <li>
-                                    <div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    Quản lý ngân hàng đề & điểm số
-                                </li>
-                                <li>
-                                    <div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    Không giới hạn số lượng bài thi
-                                </li>
-                                <li>
-                                    <div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    Tính năng chia đôi PDF nâng cao
-                                </li>
-                                <li>
-                                    <div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    Chống gian lận & Hỗ trợ 24/7
-                                </li>
+                                <li><div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>Quản lý ngân hàng đề & điểm số</li>
+                                <li><div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>Không giới hạn số lượng bài thi</li>
+                                <li><div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>Tính năng chia đôi PDF nâng cao</li>
+                                <li><div class="check-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>Chống gian lận & Hỗ trợ 24/7</li>
                             </ul>
                             <button class="btn-pricing btn-vip" onclick="openVipModalLanding()">Tiến hành Nâng cấp VIP</button>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- FAQ Section -->
-                <div class="faq-section reveal" id="faq">
+            <section class="snap-section" id="faq">
+                <div class="faq-section reveal delay-1">
                     <h2 class="section-title">Câu hỏi thường gặp</h2>
-                    
                     <div class="faq-item glass-card" onclick="toggleFaq(this)">
-                        <div class="faq-question">
-                            Học sinh có cần tạo tài khoản không?
-                            <svg class="faq-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </div>
-                        <div class="faq-answer">
-                            Không bắt buộc! Hệ thống được thiết kế theo hướng giảm thiểu rào cản. Học sinh chỉ cần nhập tên và lớp là có thể vào thi ngay lập tức thông qua mã phòng 6 số do giáo viên cung cấp.
-                        </div>
+                        <div class="faq-question">Học sinh có cần tạo tài khoản không?<svg class="faq-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+                        <div class="faq-answer">Không bắt buộc! Hệ thống được thiết kế theo hướng giảm thiểu rào cản. Học sinh chỉ cần nhập tên và lớp là có thể vào thi ngay lập tức thông qua mã phòng 6 số do giáo viên cung cấp.</div>
                     </div>
-
                     <div class="faq-item glass-card" onclick="toggleFaq(this)">
-                        <div class="faq-question">
-                            Làm sao để tôi tải đề PDF lên hệ thống?
-                            <svg class="faq-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </div>
-                        <div class="faq-answer">
-                            Ở màn hình quản trị (dành cho Giáo viên VIP), bạn chỉ cần dán link Google Drive của file PDF vào ô tạo bài thi. Hệ thống sẽ tự động nhúng và hiển thị chia đôi màn hình cùng phiếu tô trắc nghiệm cho học sinh.
-                        </div>
+                        <div class="faq-question">Làm sao để tôi tải đề PDF lên hệ thống?<svg class="faq-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+                        <div class="faq-answer">Ở màn hình quản trị (dành cho Giáo viên VIP), bạn chỉ cần dán link Google Drive của file PDF vào ô tạo bài thi. Hệ thống sẽ tự động nhúng và hiển thị chia đôi màn hình cùng phiếu tô trắc nghiệm cho học sinh.</div>
                     </div>
-
                     <div class="faq-item glass-card" onclick="toggleFaq(this)">
-                        <div class="faq-question">
-                            Tôi thanh toán gói VIP như thế nào?
-                            <svg class="faq-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </div>
-                        <div class="faq-answer">
-                            Rất đơn giản, bạn bấm vào nút "Nâng cấp VIP" ở bảng giá, màn hình sẽ hiện ra mã QR. Quét mã bằng ứng dụng ngân hàng và nhớ điền đúng phần ghi chú (Email hoặc Số điện thoại của bạn) để Admin cấp quyền ngay lập tức nhé!
-                        </div>
+                        <div class="faq-question">Tôi thanh toán gói VIP như thế nào?<svg class="faq-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+                        <div class="faq-answer">Rất đơn giản, bạn bấm vào nút "Nâng cấp VIP" ở bảng giá, màn hình sẽ hiện ra mã QR. Quét mã bằng ứng dụng ngân hàng và nhớ điền đúng phần ghi chú (Email hoặc Số điện thoại của bạn) để Admin cấp quyền ngay lập tức nhé!</div>
                     </div>
                 </div>
 
-                <!-- CTA Bottom -->
-                <div class="cta-section reveal glass-card">
+                <div class="cta-section reveal delay-2 glass-card">
                     <h2>Sẵn sàng bước vào phòng thi?</h2>
-                    <p style="color: #636366; margin-bottom: 36px; font-size: 19px; font-weight: 500;">Bắt đầu hành trình giáo dục số cùng hàng nghìn người khác ngay hôm nay.</p>
+                    <p style="color: #636366; margin-bottom: 30px; font-size: 18px; font-weight: 500;">Bắt đầu hành trình giáo dục số cùng hàng nghìn người khác ngay hôm nay.</p>
                     <button class="cta-btn" onclick="focusAuthForm()">Đăng nhập Hệ thống ngay</button>
                 </div>
-
-                <div style="margin-top: 80px; font-size: 15px; color: #8E8E93; text-align: center; font-weight: 600;">
+                
+                <div style="font-size: 14px; color: #8E8E93; text-align: center; font-weight: 600; margin-top: 20px;">
                     Bản quyền © 2026 thuộc về <b>CDWebs</b>.<br>Thiết kế dành cho sự hoàn mỹ.
                 </div>
-            </div>
+            </section>
+
         </div>
 
-        <!-- NỬA PHẢI (Form Đăng Nhập Cố Định) -->
         <div class="auth-panel" id="authPanel">
+            
             <div class="auth-card" id="authCard">
-                
-                <div class="mobile-logo">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z"/>
-                    </svg>
-                </div>
+                <div class="auth-card-content">
+                    
+                    <div class="mobile-logo">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z"/></svg>
+                    </div>
 
-                <div class="auth-header">
-                    <h2>Chào mừng trở lại</h2>
-                    <p>Vui lòng chọn vai trò để tiếp tục</p>
-                </div>
-
-                <div class="role-options">
-                    <!-- Card: Học sinh -->
-                    <div class="role-btn student-btn" id="btnAnon">
-                        <div class="role-icon">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    <div class="auth-header">
+                        <h2>Chào mừng trở lại</h2>
+                        <p>Vui lòng chọn vai trò để tiếp tục</p>
+                    </div>
+                    
+                    <div class="role-options">
+                        <div class="role-btn student-btn" id="btnAnon">
+                            <div class="role-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+                            <div class="role-text"><h3>Dành cho Học sinh</h3><span>Vào phòng làm bài ngay</span></div>
+                            <div class="role-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
                         </div>
-                        <div class="role-text">
-                            <h3>Dành cho Học sinh</h3>
-                            <span>Vào phòng làm bài ngay</span>
-                        </div>
-                        <div class="role-arrow">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        <div class="role-btn teacher-btn" id="btnGoogle">
+                            <div class="role-icon"><svg width="26" height="26" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div>
+                            <div class="role-text"><h3>Dành cho Giáo viên</h3><span>Đăng nhập qua Google</span></div>
+                            <div class="role-arrow"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
                         </div>
                     </div>
 
-                    <!-- Card: Giáo viên -->
-                    <div class="role-btn teacher-btn" id="btnGoogle">
-                        <div class="role-icon">
-                            <svg width="26" height="26" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                        </div>
-                        <div class="role-text">
-                            <h3>Dành cho Giáo viên</h3>
-                            <span>Đăng nhập qua Google</span>
-                        </div>
-                        <div class="role-arrow">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </div>
-                    </div>
+                    <div class="auth-footer"><p>© 2026 Hệ thống Trắc nghiệm CDWebs</p></div>
 
                 </div>
-
-                <div class="auth-footer">
-                    <p>© 2026 Hệ thống Trắc nghiệm CDWebs</p>
-                </div>
-
             </div>
+
         </div>
     </div>
 
-    <!-- VIP MODAL (Dùng chung) -->
     <div id="vipOverlay" class="vip-modal-overlay">
         <div class="vip-modal-content">
             <div class="vip-icon">👑</div>
             <h2>Nâng Cấp VIP</h2>
             <p style="color: #636366; font-size: 16px; margin-bottom: 24px; font-weight: 500;">Mở khóa toàn bộ tính năng cao cấp nhất.</p>
-            
-            <div id="priceDisplayContainer" class="price-container">
-                <span style="color: #8E8E93; font-weight: 500;">Đang tải bảng giá...</span>
-            </div>
-
-            <div class="qr-container">
-                <img id="qrCodeImage" src="" alt="Quét mã để thanh toán">
-            </div>
-
+            <div id="priceDisplayContainer" class="price-container"><span style="color: #8E8E93; font-weight: 500;">Đang tải bảng giá...</span></div>
+            <div class="qr-container"><img id="qrCodeImage" src="" alt="Quét mã để thanh toán"></div>
             <div class="bank-info">
                 <div class="copy-box" onclick="copyText('0985461396', 'Số tài khoản')">
-                    <div class="copy-left">
-                        <span class="copy-label">Ngân hàng MB Bank</span>
-                        <span class="copy-value">0985461396</span>
-                    </div>
+                    <div class="copy-left"><span class="copy-label">Ngân hàng MB Bank</span><span class="copy-value">0985461396</span></div>
                     <div class="copy-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></div>
                 </div>
-
                 <div class="copy-box" onclick="copyText(document.getElementById('displayTransferContent').innerText, 'Nội dung')">
-                    <div class="copy-left">
-                        <span class="copy-label">Nội dung chuyển khoản</span>
-                        <span class="copy-value" id="displayTransferContent" style="color: #FF3B30;">VIP ---</span>
-                    </div>
+                    <div class="copy-left"><span class="copy-label">Nội dung chuyển khoản</span><span class="copy-value" id="displayTransferContent" style="color: #FF3B30;">VIP ---</span></div>
                     <div class="copy-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></div>
                 </div>
             </div>
-            
             <button class="btn-close" onclick="document.getElementById('vipOverlay').classList.remove('active')">Đóng lại</button>
         </div>
     </div>
 
-    <!-- SCRIPT GIAO DIỆN -->
     <script>
         function toggleFaq(element) {
-            document.querySelectorAll('.faq-item').forEach(item => {
-                if(item !== element) item.classList.remove('active');
-            });
+            document.querySelectorAll('.faq-item').forEach(item => { if(item !== element) item.classList.remove('active'); });
             element.classList.toggle('active');
         }
 
         document.addEventListener("DOMContentLoaded", function() {
             const reveals = document.querySelectorAll(".reveal");
-            const observerOptions = { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0.1 };
+            const scrollContainer = document.getElementById('scrollContainer');
+            
+            // Intersection Observer
+            const observerOptions = { 
+                root: window.innerWidth > 1024 ? scrollContainer : null,
+                rootMargin: '0px 0px -50px 0px', 
+                threshold: 0.15 
+            };
 
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
-                    if(entry.isIntersecting) { entry.target.classList.add('active'); }
+                    if(entry.isIntersecting) { 
+                        entry.target.classList.add('active'); 
+                    } else {
+                        entry.target.classList.remove('active');
+                    }
                 });
             }, observerOptions);
 
@@ -759,7 +644,7 @@
             const section = document.getElementById(id);
             if(section) {
                 if(window.innerWidth > 1024) {
-                    document.getElementById('scrollContainer').scrollTo({ top: section.offsetTop - 50, behavior: 'smooth' });
+                    document.getElementById('scrollContainer').scrollTo({ top: section.offsetTop, behavior: 'smooth' });
                 } else {
                     window.scrollTo({ top: section.offsetTop - 50, behavior: 'smooth' });
                 }
@@ -777,7 +662,6 @@
         }
     </script>
 
-    <!-- FIREBASE AUTH & LOGIC (Giữ nguyên gốc) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
