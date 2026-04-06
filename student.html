@@ -6,6 +6,7 @@
     <title>Khu Vực Thi - Hệ Thống Trắc Nghiệm</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="shortcut icon" href="favicon-canhdev-removebg-preview.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
 
     <style>
         /* ========================================= */
@@ -178,6 +179,82 @@
             .exam-header { flex-direction: column; gap: 15px; text-align: center; }
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+
+        /* CSS GÓC LUYỆN TIẾNG ANH (GIỌT NƯỚC) */
+        .english-swiper-container { width: 100%; padding-bottom: 40px; overflow: hidden; margin-top: 15px;}
+        /* Đã xóa cursor: pointer ở thẻ ngoài cùng để tránh xung đột */
+        .water-card {
+            position: relative; width: 280px; height: 280px; margin: 20px auto;
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: inset 20px 20px 20px rgba(0, 0, 0, .02), 5px 25px 20px rgba(0, 0, 0, .03), 5px 20px 30px rgba(0, 0, 0, .03), inset -20px -20px 25px rgba(255, 255, 255, .9);
+            border-radius: 61% 39% 52% 48% / 44% 59% 41% 56%;
+            transition: .5s ease-in-out; display: flex; justify-content: center; align-items: center;
+        }
+        /* Bỏ thay đổi hình dáng gắt gỏng, chuyển sang phóng to nhẹ nhàng */
+        /* .water-card:hover { 
+            transform: scale(1.03); 
+            box-shadow: inset 20px 20px 20px rgba(0, 0, 0, .02), 5px 25px 20px rgba(0, 0, 0, .05), 5px 20px 30px rgba(0, 0, 0, .05), inset -20px -20px 25px rgba(255, 255, 255, 1);
+        } */
+        .water-card::before { content: ''; position: absolute; top: 40px; left: 55px; width: 25px; height: 25px; background: #fff; border-radius: 50%; opacity: .9; pointer-events: none;}
+        .water-card::after { content: ''; position: absolute; top: 70px; left: 70px; width: 12px; height: 12px; background: #fff; border-radius: 50%; opacity: .9; pointer-events: none;}
+        .water-content { position: relative; z-index: 2; text-align: center; padding: 20px; display: flex; flex-direction: column; align-items: center;}
+        .water-icon { font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1)); }
+        .water-title { font-size: 20px; font-weight: 800; color: #1E293B; margin-bottom: 5px; }
+        .water-desc { font-size: 13px; color: #64748B; font-weight: 500; margin-bottom: 15px; }
+        .water-btn { position: relative; padding: 10px 25px; border: none; border-radius: 40px; background: var(--clr); color: #fff; font-weight: 700; font-size: 14px; box-shadow: 0 5px 15px rgba(0, 0, 0, .15); cursor: pointer; transition: 0.3s; }
+        .water-btn:hover { transform: scale(1.05); }
+        .swiper-pagination-bullet { background: #6366F1 !important; }
+        /* ========================================= */
+        /* CSS CHƠI FLASHCARD 3D                     */
+        /* ========================================= */
+        .flashcard-container { perspective: 1000px; width: 100%; max-width: 400px; height: 250px; margin: 30px auto; cursor: pointer; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+        .flashcard-container.is-flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.8); }
+        .flashcard-front { background: linear-gradient(135deg, #EEF2FF, #FFFFFF); color: #1E293B; }
+        .flashcard-back { background: linear-gradient(135deg, #F59E0B, #FCD34D); color: #FFFFFF; transform: rotateY(180deg); }
+        .fc-word { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+        .fc-hint { font-size: 14px; opacity: 0.7; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; position: absolute; bottom: 20px; }
+        .fc-controls { display: flex; justify-content: space-between; max-width: 400px; margin: 0 auto; gap: 15px; }
+        /* ========================================= */
+        /* CSS GIAO DIỆN ĐIỀN KHUYẾT                 */
+        /* ========================================= */
+        .fill-blank-container { background: #FFFFFF; border-radius: 24px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #E2E8F0; margin: 30px auto; max-width: 550px; text-align: center; display: none; }
+        .fb-sentence { font-size: 20px; font-weight: 600; color: #1E293B; line-height: 1.8; margin-bottom: 25px; }
+        .fb-input { font-size: 20px; font-weight: 800; color: #4F46E5; border: none; border-bottom: 3px solid #CBD5E1; background: transparent; padding: 5px 15px; width: 160px; text-align: center; transition: 0.3s; margin: 0 8px; font-family: monospace;}
+        .fb-input:focus { border-bottom-color: #4F46E5; width: 200px; }
+        .fb-input.is-correct { border-bottom-color: #10B981; color: #10B981; background: #ECFDF5; border-radius: 8px 8px 0 0; }
+        .fb-input.is-wrong { border-bottom-color: #EF4444; color: #EF4444; background: #FEF2F2; border-radius: 8px 8px 0 0; }
+        .btn-check-ans { background: #10B981; color: white; border: none; padding: 14px 30px; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);}
+        .btn-check-ans:hover { background: #059669; transform: translateY(-2px); }
+        #fbFeedback { font-size: 15px; font-weight: 700; margin-top: 15px; min-height: 22px; }
+        /* Tùy chỉnh nút Nộp bài ngay trong phần Reading */
+.btn-submit-exam {
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px -10px rgba(124, 58, 237, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-submit-exam:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -10px rgba(124, 58, 237, 0.6);
+    filter: brightness(1.1);
+}
+
+.btn-submit-exam:active {
+    transform: translateY(0);
+}
     </style>
 </head>
 <body>
@@ -200,6 +277,49 @@
             <button id="btnCheckRoom" class="btn">Vào Thi Ngay</button>
         </div>
 
+
+        <div class="list-section-header" style="margin-top: 20px; margin-bottom: 5px;">
+            <h2>🇬🇧 Góc Luyện Ngoại Ngữ</h2>
+            <span style="background: #FEF08A; color: #854D0E; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 12px;">NEW</span>
+        </div>
+        <p class="subtitle" style="margin-bottom: 10px; text-align: left;">Trải nghiệm giao diện học tập thế hệ mới</p>
+        
+        <div class="swiper english-swiper-container">
+            <div class="swiper-wrapper" style="padding-bottom: 30px;">
+                <div class="swiper-slide">
+                    <div class="water-card">
+                        <div class="water-content">
+                            <div class="water-icon">📚</div>
+                            <div class="water-title">Vocabulary</div>
+                            <div class="water-desc">Lật Flashcard thông minh</div>
+                            <button class="water-btn" style="--clr:#ff0f5b; position: relative; z-index: 10;" onclick="openEnglishSkill('vocab', '📚 Luyện Từ Vựng')">Khám Phá</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="water-card">
+                        <div class="water-content">
+                            <div class="water-icon">👁️‍🗨️</div>
+                            <div class="water-title">Reading</div>
+                            <div class="water-desc">Chia đôi màn hình tối ưu</div>
+                            <button class="water-btn" style="--clr:#be01fe; position: relative; z-index: 10;" onclick="openEnglishSkill('reading', '👁️‍🗨️ Luyện Đọc Hiểu')">Luyện Ngay</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="water-card">
+                        <div class="water-content">
+                            <div class="water-icon">✍️</div>
+                            <div class="water-title">Writing</div>
+                            <div class="water-desc">Kéo thả sắp xếp câu</div>
+                            <button class="water-btn" style="--clr:#fea401; position: relative; z-index: 10;" onclick="openEnglishSkill('writing', '✍️ Luyện Viết Câu')">Bắt Đầu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+
         <div class="list-section">
             <div class="list-section-header">
                 <h2>📁 Danh Mục Bài Thi</h2>
@@ -211,7 +331,29 @@
             </div>
         </div>
     </div>
+    <div id="step-english-list" class="glass-container home-container" style="display: none;">
+        <div class="list-section-header">
+            <h2 id="englishListTitle">📚 Danh Sách Bài Tập</h2>
+            <button class="btn-outline" style="padding: 8px 16px; width: auto; font-size: 13px; border-radius: 12px; margin:0;" onclick="showStep('step-room')">Quay lại</button>
+        </div>
+        <div id="englishListContainer"></div>
+    </div>
 
+    <div id="step-result" class="glass-container">
+        <h2>Kết Quả Bài Thi</h2>
+        <p class="subtitle" id="resultExamTitle" style="color: #4F46E5; font-weight: 700;">---</p>
+        <div id="scoreDisplay">0/10</div>
+        <div id="correctCountDisplay">Đúng: 0 / 0</div>
+        
+        <div id="pdfResultAction" style="display: none; margin-top: 20px; background: #F8FAFC; padding: 20px; border-radius: 20px; border: 1px dashed #CBD5E1;">
+            <p style="font-weight: 700; color: #334155; margin-bottom: 15px;">Tài liệu chữa bài (PDF)</p>
+            <a id="btnViewAnswerPdf" href="#" target="_blank" class="btn" style="display: none; background: #6366F1; text-decoration: none;">📄 Xem File Đáp Án Chi Tiết</a>
+            <a id="btnViewAnswerVideo" href="#" target="_blank" class="btn" style="display: none; background: #EF4444; text-decoration: none;">📺 Xem Video Chữa Bài</a>
+        </div>
+
+        <button id="btnShowReview" class="btn" style="margin-top: 20px;">Xem Chi Tiết Đúng/Sai</button>
+        <button onclick="window.location.reload()" class="btn btn-outline">Về Trang Chủ</button>
+    </div>
     <div id="step-info" class="glass-container">
         <h2>Thông Tin Thí Sinh</h2>
         <p class="subtitle" id="examTitleDisplay" style="color: #4F46E5; font-weight: 700; font-size: 18px;">Đang tải...</p>
@@ -234,22 +376,78 @@
         <button id="btnSubmitExam" class="btn btn-submit-exam">Nộp Bài Ngay</button>
     </div>
 
-    <div id="step-result" class="glass-container">
-        <h2>Hoàn Thành!</h2>
-        <p class="subtitle" id="resultExamTitle">Tên bài thi</p>
-        <div id="scoreDisplay">--/10</div>
-        <p id="correctCountDisplay" class="subtitle" style="color: #475569; font-weight: 700; margin-bottom: 35px; margin-top: 10px;">Số câu đúng: --/--</p>
-        
-        <div id="pdfResultAction" style="display:none; background: #FFFBEB; border: 1px dashed #F59E0B; padding: 20px; border-radius: 16px; margin-bottom: 20px;">
-            <p style="color: #B45309; font-weight: 600; margin-bottom: 15px;">Tài liệu và Video chữa bài chi tiết:</p>
-            <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                <a id="btnViewAnswerPdf" target="_blank" style="display:none; padding: 12px 20px; background: #F59E0B; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px;">📄 Xem File Đáp Án</a>
-                <a id="btnViewAnswerVideo" target="_blank" style="display:none; padding: 12px 20px; background: #EF4444; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px;">📺 Video Chữa Bài</a>
+    <div id="step-vocab-play" class="glass-container exam-container" style="display: none; text-align: center;">
+        <div class="exam-header">
+            <div id="vocabTitleDisplay" style="font-weight: 800; color: #D97706; font-size: 18px;">---</div>
+            <div class="timer-box" style="background: #FEF3C7; color: #D97706;">
+                <span id="vocabProgress">1/10</span>
             </div>
         </div>
 
-        <button id="btnShowReview" class="btn btn-outline">Xem Chi Tiết Bài Làm</button>
-        <button onclick="window.location.reload()" class="btn">Về Trang Chủ</button>
+        <div class="flashcard-container" id="flashcardBox" onclick="this.classList.toggle('is-flipped')">
+            <div class="flashcard-inner">
+                <div class="flashcard-front">
+                    <div class="fc-word" id="fcWordEn">Apple</div>
+                    <div class="fc-hint">Chạm để lật thẻ</div>
+                </div>
+                <div class="flashcard-back">
+                    <div class="fc-word" id="fcWordVn">Quả táo</div>
+                    <div class="fc-hint">Nghĩa tiếng Việt</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fill-blank-container" id="fillBlankBox">
+            <div class="fb-sentence" id="fbSentenceDisplay">She is very <input type="text" class="fb-input" id="fbInputAnswer" autocomplete="off"> today.</div>
+            <button class="btn-check-ans" id="btnCheckBlank" onclick="checkBlankAnswer()">Kiểm tra đáp án</button>
+            <div id="fbFeedback"></div>
+        </div>
+
+        <div class="fc-controls" style="margin-top: 20px;">
+            <button class="btn btn-outline" id="btnPrevVocab" onclick="prevFlashcard()">⬅ Câu trước</button>
+            <button class="btn" id="btnNextVocab" style="background: linear-gradient(135deg, #F59E0B, #D97706);" onclick="nextFlashcard()">Câu tiếp theo ➡</button>
+        </div>
+        <button onclick="showStep('step-room')" class="btn btn-outline" style="margin-top: 20px; border: none; box-shadow: none; background: transparent;">Thoát học tập</button>
+    </div>
+    <div id="step-reading-play" class="glass-container exam-container" style="display: none; max-width: 1100px; padding: 25px;">
+        <div class="exam-header" style="background: #FAF5FF; border-color: #E9D5FF;">
+            <div id="readingTitleDisplay" style="font-weight: 800; color: #6B21A8; font-size: 18px;">---</div>
+            <button onclick="submitReading()" class="btn-submit-exam" style="margin:0; padding: 10px 25px; font-size: 15px; width: auto; background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%); box-shadow: 0 10px 20px -10px rgba(147, 51, 234, 0.5);">Nộp Bài Ngay</button>
+        </div>
+        
+        <div class="layout-pdf" style="height: 65vh; margin-top: 15px;">
+            <div class="pdf-viewer" style="background: #FFFFFF; padding: 30px; overflow-y: auto; border: 2px solid #E9D5FF; text-align: left; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);">
+                <h3 style="color: #7E22CE; margin-bottom: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px;">📖 Passage</h3>
+                <div id="readingPassageContent" style="font-size: 16px; line-height: 1.8; color: #334155; white-space: pre-wrap; font-weight: 500;"></div>
+            </div>
+            <div class="virtual-sheet" style="padding: 20px; overflow-y: auto; background: #F8FAFC; border: 2px solid #E2E8F0;" id="readingQuestionsContainer">
+                </div>
+        </div>
+        <button onclick="showStep('step-english-list')" class="btn btn-outline" style="margin-top: 20px; border: none; color: #6B21A8;">⬅ Thoát Luyện Tập</button>
+    </div>
+    <div id="step-writing-play" class="glass-container exam-container" style="display: none; text-align: center;">
+        <div class="exam-header" style="background: #FFF7ED; border-color: #FFEDD5;">
+            <div id="writingTitleDisplay" style="font-weight: 800; color: #EA580C; font-size: 18px;">---</div>
+            <div class="timer-box" style="background: #FFEDD5; color: #EA580C;">
+                <span id="writingProgress">1/10</span>
+            </div>
+        </div>
+
+        <div class="fill-blank-container" id="writingBox" style="display: block;">
+            <div style="font-size: 14px; color: #64748B; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px;">Viết từ tiếng Anh có nghĩa sau:</div>
+            <div class="fb-sentence" id="writingMeaningDisplay" style="font-size: 28px; color: #EA580C; font-weight: 900; margin-bottom: 30px;">---</div>
+            
+            <input type="text" class="fb-input" id="writingInputAnswer" autocomplete="off" placeholder="Gõ từ tiếng Anh..." style="width: 80%; max-width: 350px; margin: 0 auto 25px auto; display: block; font-size: 24px; text-transform: lowercase;" onkeypress="if(event.key === 'Enter') checkWritingAnswer()">
+            
+            <button class="btn-check-ans" id="btnCheckWriting" onclick="checkWritingAnswer()" style="background: #EA580C; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);">Kiểm tra chính tả</button>
+            <div id="writingFeedback"></div>
+        </div>
+
+        <div class="fc-controls" style="margin-top: 20px;">
+            <button class="btn btn-outline" onclick="prevWriting()">⬅ Từ trước</button>
+            <button class="btn" id="btnNextWriting" style="background: linear-gradient(135deg, #F97316, #EA580C);" onclick="nextWriting()">Từ tiếp theo ➡</button>
+        </div>
+        <button onclick="showStep('step-english-list')" class="btn btn-outline" style="margin-top: 20px; border: none; box-shadow: none; background: transparent; color: #EA580C; font-weight: 700;">⬅ Thoát Luyện Tập</button>
     </div>
 
     <div id="step-review" class="glass-container exam-container">
@@ -270,6 +468,7 @@
         <button id="btnBackToResult" class="btn" style="margin-top: 40px;">Quay Lại Bảng Điểm</button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
@@ -331,19 +530,34 @@
             });
         }
 
+        // Thay thế hàm showStep bằng đoạn này
         window.showStep = function(stepId) {
-            ['step-room', 'step-info', 'step-exam', 'step-result', 'step-review'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) { el.style.display = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(10px)'; }
-            });
-            const target = document.getElementById(stepId);
-            if(target) {
-                target.style.display = 'block';
-                setTimeout(() => { target.style.opacity = '1'; target.style.transform = 'translateY(0)'; }, 30);
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    // Danh sách tất cả các màn hình có thể có
+    const allSteps = [
+        'step-room', 'step-info', 'step-exam', 'step-result', 
+        'step-review', 'step-english-list', 'step-vocab-play', 'step-reading-play','step-room', 'step-info', 'step-exam', 'step-result', 'step-review', 'step-english-list', 'step-vocab-play', 'step-reading-play', 'step-writing-play'
+    ];
 
+    allSteps.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) { 
+            el.style.display = 'none'; 
+            el.style.opacity = '0'; 
+            el.style.transform = 'translateY(10px)'; 
+        }
+    });
+
+    const target = document.getElementById(stepId);
+    if(target) {
+        // Nếu quay về Danh sách bài tập hoặc Phòng thi, reset lại giao diện container
+        target.style.display = 'block';
+        setTimeout(() => { 
+            target.style.opacity = '1'; 
+            target.style.transform = 'translateY(0)'; 
+        }, 30);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
         window.fetchData = async function() {
             const container = document.getElementById('foldersContainer');
             container.innerHTML = '<p style="text-align: center; color: #94A3B8; font-weight:500;">Đang cập nhật dữ liệu...</p>';
@@ -355,7 +569,13 @@
                 const q = query(collection(db, "exams"), where("status", "==", "active"), where("visibility", "==", "public"));
                 const eSnap = await getDocs(q);
                 globalExams = [];
-                eSnap.forEach(doc => { globalExams.push({ id: doc.id, ...doc.data() }); });
+                eSnap.forEach(doc => { 
+                    const data = doc.data();
+                    // BỘ LỌC QUAN TRỌNG: Ẩn các bài Tiếng Anh khỏi trang chủ để không bị lỗi trắng trang
+                    if (data.type !== 'vocab' && data.type !== 'reading' && data.type !== 'writing') {
+                        globalExams.push({ id: doc.id, ...data }); 
+                    }
+                });
                 globalExams.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
 
                 renderFoldersUI();
@@ -870,6 +1090,301 @@
         
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false; };
+        // =============================================== new ===============================================
+
+        // ==========================================
+        // LOGIC GÓC NGOẠI NGỮ (CHUYỂN HƯỚNG & HỌC)
+        // ==========================================
+        
+        // 1. Khởi tạo Swiper trực tiếp (Bỏ DOMContentLoaded để tránh lỗi undefined)
+        setTimeout(() => {
+            new Swiper(".english-swiper-container", {
+                effect: "coverflow", grabCursor: true, centeredSlides: true,
+                slidesPerView: "auto",
+                coverflowEffect: { rotate: 0, stretch: 0, depth: 100, modifier: 2, slideShadows: false },
+                pagination: { el: ".swiper-pagination", dynamicBullets: true },
+                breakpoints: { 320: { slidesPerView: 1 }, 768: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }
+            });
+        }, 100);
+
+        let currentVocabSet = [];
+        let currentVocabIndex = 0;
+
+        // 2. Mở danh sách các bài tập Tiếng Anh khi bấm vào Giọt Nước
+        window.openEnglishSkill = async function(skillType, title) {
+            Swal.fire({ title: 'Đang tải dữ liệu...', didOpen: () => Swal.showLoading() });
+            try {
+                // Truy vấn Firebase để lấy bài đúng chuyên mục (vocab, reading, writing)
+                const q = query(collection(db, "exams"), where("type", "==", skillType), where("status", "==", "active"), where("visibility", "==", "public"));
+                const snap = await getDocs(q);
+                
+                const listContainer = document.getElementById('englishListContainer');
+                document.getElementById('englishListTitle').innerText = title;
+                listContainer.innerHTML = '';
+
+                if (snap.empty) {
+                    listContainer.innerHTML = '<p style="text-align:center; color:#94A3B8; font-weight:500;">Giáo viên chưa tạo bài tập nào cho mục này.</p>';
+                } else {
+                    window.tempEnglishExams = [];
+                    snap.forEach(doc => window.tempEnglishExams.push({id: doc.id, ...doc.data()}));
+
+                    window.tempEnglishExams.forEach((ex, idx) => {
+                        let icon = skillType === 'vocab' ? '📚' : (skillType === 'reading' ? '👁️‍🗨️' : '✍️');
+                        listContainer.innerHTML += `
+                            <div class="exam-card-large" style="margin-bottom: 15px; cursor: pointer; border-left: 4px solid #F59E0B; background: #FFFBEB;" onclick="startEnglishSession('${skillType}', ${idx})">
+                                <h3 style="color: #D97706; margin-bottom: 5px;">${icon} ${ex.title}</h3>
+                                <div style="font-size: 14px; color: #B45309; font-weight: 600;">Số lượng: ${ex.questions ? ex.questions.length : 0} mục</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                Swal.close();
+                // Ẩn tất cả và mở bảng danh sách Tiếng Anh
+                document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; el.style.opacity = '0'; });
+                const target = document.getElementById('step-english-list');
+                target.style.display = 'block';
+                setTimeout(() => { target.style.opacity = '1'; target.style.transform = 'translateY(0)'; }, 30);
+
+            } catch (e) { Swal.fire('Lỗi', e.message, 'error'); }
+        };
+
+        // 3. Xử lý khi học sinh click vào bài tập
+        window.startEnglishSession = function(skillType, index) {
+            const exam = window.tempEnglishExams[index];
+            document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; });
+
+            if (skillType === 'vocab') {
+                currentVocabSet = exam.questions;
+                currentVocabIndex = 0;
+                document.getElementById('vocabTitleDisplay').innerText = exam.title;
+                updateFlashcardUI();
+                
+                const vocabPlay = document.getElementById('step-vocab-play');
+                vocabPlay.style.display = 'block';
+                setTimeout(() => { vocabPlay.style.opacity = '1'; }, 30);
+            } 
+            else if (skillType === 'reading') {
+                document.getElementById('readingTitleDisplay').innerText = exam.title;
+                document.getElementById('readingPassageContent').innerHTML = exam.passage || "<i>Không có đoạn văn liệu</i>";
+                
+                const qContainer = document.getElementById('readingQuestionsContainer');
+                qContainer.innerHTML = '';
+                
+                // Lưu biến toàn cục để chấm điểm
+                window.currentReadingQuestions = exam.questions;
+                window.readingDraft = {};
+                
+                // Gen giao diện câu hỏi bên phải
+                exam.questions.forEach((q, idx) => {
+                    let html = `<div class="question-card" style="padding: 20px; margin-bottom: 15px; border-radius: 16px;"><div class="question-text" style="font-size:15px; margin-bottom:15px;">Câu ${idx + 1}: ${q.question}</div><div class="options">`;
+                    ['A', 'B', 'C', 'D'].forEach(opt => {
+                        html += `<label class="option-label" style="padding:10px 15px; font-size:14px; border-radius: 12px;"><input type="radio" name="rq_${idx}" value="${opt}" onchange="readingDraft['q_${idx}'] = '${opt}'"> ${opt}. ${q.options[opt]}</label>`;
+                    });
+                    html += `</div></div>`;
+                    qContainer.innerHTML += html;
+                });
+                
+                const readPlay = document.getElementById('step-reading-play');
+                readPlay.style.display = 'block';
+                setTimeout(() => { readPlay.style.opacity = '1'; }, 30);
+            }
+            // ... (Phần vocab và reading ở trên giữ nguyên)
+            else if (skillType === 'writing') {
+                window.currentWritingSet = exam.questions;
+                window.currentWritingIndex = 0;
+                
+                document.getElementById('writingTitleDisplay').innerText = exam.title;
+                updateWritingUI();
+                
+                const writingPlay = document.getElementById('step-writing-play');
+                writingPlay.style.display = 'block';
+                setTimeout(() => { writingPlay.style.opacity = '1'; }, 30);
+            }
+        }; // <-- Đóng hàm startEnglishSession tại đây
+
+        // ==========================================
+        // CÁC HÀM XỬ LÝ RIÊNG CHO LUYỆN VIẾT TỪ VỰNG
+        // ==========================================
+        window.updateWritingUI = function() {
+            const currentData = window.currentWritingSet[window.currentWritingIndex];
+            const inputEl = document.getElementById('writingInputAnswer');
+            const btnNext = document.getElementById('btnNextWriting');
+            
+            document.getElementById('writingProgress').innerText = `${window.currentWritingIndex + 1} / ${window.currentWritingSet.length}`;
+            document.getElementById('writingMeaningDisplay').innerText = currentData.meaning; // Hiện nghĩa tiếng Việt
+            
+            // Reset input và feedback
+            inputEl.value = '';
+            inputEl.disabled = false;
+            inputEl.classList.remove('is-correct', 'is-wrong');
+            document.getElementById('writingFeedback').innerText = '';
+            document.getElementById('btnCheckWriting').style.display = 'inline-block';
+            
+            btnNext.style.opacity = '0.5'; 
+            setTimeout(() => { inputEl.focus(); }, 100);
+        };
+
+        window.checkWritingAnswer = function() {
+            const currentData = window.currentWritingSet[window.currentWritingIndex];
+            const inputEl = document.getElementById('writingInputAnswer');
+            const feedbackEl = document.getElementById('writingFeedback');
+            
+            const userAnswer = inputEl.value.trim().toLowerCase();
+            const correctAnswer = currentData.word.trim().toLowerCase(); // Admin lưu tiếng Anh ở phần word
+
+            if (userAnswer === correctAnswer) {
+                inputEl.classList.remove('is-wrong');
+                inputEl.classList.add('is-correct');
+                inputEl.disabled = true; 
+                
+                feedbackEl.innerText = '🎉 Chính xác tuyệt đối!';
+                feedbackEl.style.color = '#10B981';
+                document.getElementById('btnCheckWriting').style.display = 'none';
+                document.getElementById('btnNextWriting').style.opacity = '1'; 
+            } else {
+                inputEl.classList.add('is-wrong');
+                feedbackEl.innerHTML = `❌ Sai rồi! Đáp án đúng là: <b style="color: #EA580C; font-size: 18px;">${currentData.word}</b>`;
+                feedbackEl.style.color = '#EF4444';
+                
+                inputEl.style.transform = 'translateX(5px)';
+                setTimeout(() => inputEl.style.transform = 'translateX(-5px)', 50);
+                setTimeout(() => inputEl.style.transform = 'translateX(0)', 100);
+            }
+        };
+
+        window.nextWriting = function() {
+            if (window.currentWritingIndex < window.currentWritingSet.length - 1) {
+                window.currentWritingIndex++; 
+                updateWritingUI();
+            } else {
+                Swal.fire({icon: 'success', title: 'Hoàn thành!', text: 'Bạn đã hoàn thành bài luyện viết!', confirmButtonColor: '#EA580C'})
+                .then(() => { showStep('step-english-list'); });
+            }
+        };
+
+        window.prevWriting = function() {
+            if (window.currentWritingIndex > 0) {
+                window.currentWritingIndex--; 
+                updateWritingUI();
+            }
+        };
+
+        // Hàm Nộp Bài Reading tính điểm ngay
+        window.submitReading = function() {
+            Swal.fire({ title: 'Chốt nộp bài?', icon: 'question', showCancelButton: true, confirmButtonColor: '#9333EA', confirmButtonText: 'Nộp Ngay' }).then((result) => { 
+                if (result.isConfirmed) {
+                    let correct = 0;
+                    const total = window.currentReadingQuestions.length;
+                    
+                    window.currentReadingQuestions.forEach((q, idx) => {
+                        if (window.readingDraft[`q_${idx}`] === q.correctAnswer) correct++;
+                    });
+                    
+                    const score = ((correct / total) * 10).toFixed(1);
+                    
+                    Swal.fire({
+                        icon: 'success', title: 'Hoàn thành bài đọc!',
+                        html: `Kết quả của bạn:<br><b style="font-size: 40px; color: #9333EA;">${score}</b> điểm<br><span style="color:#64748B;">Đúng ${correct}/${total} câu</span>`,
+                        confirmButtonText: 'Tuyệt vời', confirmButtonColor: '#9333EA'
+                    }).then(() => { showStep('step-english-list'); });
+                }
+            });
+        };
+
+        // 4. Các hàm điều khiển Flashcard
+        // 4. Các hàm điều khiển Hiển thị & Chấm điểm tức thì
+        window.updateFlashcardUI = function() {
+            const currentData = currentVocabSet[currentVocabIndex];
+            const fcBox = document.getElementById('flashcardBox');
+            const fbBox = document.getElementById('fillBlankBox');
+            const btnNext = document.getElementById('btnNextVocab');
+            
+            document.getElementById('vocabProgress').innerText = `${currentVocabIndex + 1} / ${currentVocabSet.length}`;
+
+            // NẾU CÂU CÓ CHỨA 3 DẤU GẠCH DƯỚI -> CHẾ ĐỘ ĐIỀN KHUYẾT
+            if (currentData.word.includes('___')) {
+                fcBox.style.display = 'none';
+                fbBox.style.display = 'block';
+                
+                // Thay thế ___ bằng ô input
+                const sentenceHtml = currentData.word.replace('___', '<input type="text" class="fb-input" id="fbInputAnswer" autocomplete="off" onkeypress="if(event.key === \'Enter\') checkBlankAnswer()">');
+                document.getElementById('fbSentenceDisplay').innerHTML = sentenceHtml;
+                
+                // Reset trạng thái
+                document.getElementById('fbFeedback').innerText = '';
+                document.getElementById('btnCheckBlank').style.display = 'inline-block';
+                
+                // Khóa nút Next cho đến khi làm đúng (tùy chọn, ở đây tạm thời mở nhưng đổi màu mờ)
+                btnNext.style.opacity = '0.5'; 
+                
+                // Tự động focus vào ô nhập
+                setTimeout(() => { document.getElementById('fbInputAnswer').focus(); }, 100);
+
+            } 
+            // NẾU LÀ TỪ VỰNG BÌNH THƯỜNG -> CHẾ ĐỘ LẬT THẺ 3D
+            else {
+                fcBox.style.display = 'block';
+                fbBox.style.display = 'none';
+                btnNext.style.opacity = '1';
+                
+                fcBox.classList.remove('is-flipped'); 
+                document.getElementById('fcWordEn').innerText = currentData.word;
+                document.getElementById('fcWordVn').innerText = currentData.meaning;
+            }
+        };
+
+        window.checkBlankAnswer = function() {
+            const currentData = currentVocabSet[currentVocabIndex];
+            const inputEl = document.getElementById('fbInputAnswer');
+            const feedbackEl = document.getElementById('fbFeedback');
+            
+            const userAnswer = inputEl.value.trim().toLowerCase();
+            const correctAnswer = currentData.meaning.trim().toLowerCase(); // Admin lưu phần sau dấu = vào meaning
+
+            if (userAnswer === correctAnswer) {
+                inputEl.classList.remove('is-wrong');
+                inputEl.classList.add('is-correct');
+                inputEl.disabled = true; // Khóa ô nhập
+                
+                feedbackEl.innerText = '🎉 Chính xác tuyệt đối!';
+                feedbackEl.style.color = '#10B981';
+                document.getElementById('btnCheckBlank').style.display = 'none';
+                document.getElementById('btnNextVocab').style.opacity = '1'; // Sáng nút Next
+                
+            } else {
+                inputEl.classList.add('is-wrong');
+                feedbackEl.innerText = '❌ Sai rồi, thử lại nhé!';
+                feedbackEl.style.color = '#EF4444';
+                
+                // Lắc nhẹ ô input tạo cảm giác
+                inputEl.style.transform = 'translateX(5px)';
+                setTimeout(() => inputEl.style.transform = 'translateX(-5px)', 50);
+                setTimeout(() => inputEl.style.transform = 'translateX(0)', 100);
+            }
+        };
+
+        window.nextFlashcard = function() {
+            if (currentVocabIndex < currentVocabSet.length - 1) {
+                currentVocabIndex++; 
+                updateFlashcardUI();
+            } else {
+                Swal.fire({icon: 'success', title: 'Hoàn thành!', text: 'Tuyệt vời, bạn đã học xong bộ từ vựng & bài tập này!', confirmButtonColor: '#F59E0B'})
+                .then(() => { 
+                    document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; });
+                    const target = document.getElementById('step-english-list');
+                    target.style.display = 'block';
+                    setTimeout(() => { target.style.opacity = '1'; }, 30);
+                });
+            }
+        };
+
+        window.prevFlashcard = function() {
+            if (currentVocabIndex > 0) {
+                currentVocabIndex--; 
+                updateFlashcardUI();
+            }
+        };
     </script>
 </body>
 </html>
