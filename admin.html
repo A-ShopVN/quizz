@@ -214,6 +214,7 @@
         <div class="tabs" id="tabMenu">
             <button class="tab-btn active" onclick="switchTab('create_text')">✍️ Tạo Bài Text</button>
             <button class="tab-btn" onclick="switchTab('create_pdf')">📄 Tạo Đề PDF</button>
+            <button class="tab-btn" id="btnTabEnglish" onclick="switchTab('create_english')">🇬🇧 Đề Tiếng Anh</button>
             <button class="tab-btn" onclick="switchTab('manage')">🗂️ Quản Lý Phòng</button>
             <button class="tab-btn" id="tabBtnAdminUsers" onclick="switchTab('users')">👑 Quản Lý VIP</button>
         </div>
@@ -331,6 +332,57 @@
             </div>
 
             <button id="btnCreateExamPdf" class="btn-create" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 10px 20px -10px rgba(16, 185, 129, 0.6);">Tạo Mã Phòng PDF</button>
+        </div>
+
+
+        <div id="tab-create-english" class="tab-content">
+            <h2 style="color: #D97706;">🇬🇧 Tạo Bài Tập Ngoại Ngữ</h2>
+            <div class="instruction-box" id="englishInstruction" style="border-left-color: #F59E0B; background: #FFFBEB; color: #B45309;">
+                </div>
+
+            <div class="row">
+                <div class="col form-group">
+                    <label>Kỹ năng luyện tập:</label>
+                    <select id="englishType" class="form-input" onchange="changeEnglishInstruction()">
+                        <option value="vocab">📚 Vocabulary & Fill-in-blank (Từ vựng / Điền khuyết)</option>
+                        <option value="reading">👁️‍🗨️ Reading (Đọc hiểu văn bản)</option>
+                        <option value="writing">✍️ Writing (Viết lại từ)</option>
+                    </select>
+                </div>
+                <div class="col form-group">
+                    <label>Thư mục chứa:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="vocabFolder" class="form-input" style="flex: 1;"><option value="">-- Chọn thư mục --</option></select>
+                        <button class="btn-import btn-import-word" style="min-width: unset; padding: 0 15px; background: #F59E0B;" onclick="createNewFolder()" type="button">➕ Tạo mới</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col form-group">
+                    <label>Chế độ hiển thị:</label>
+                    <select id="englishVisibility" class="form-input">
+                        <option value="public">🌍 Công khai (Hiện ngoài danh sách)</option>
+                        <option value="hidden">🙈 Ẩn (Học sinh phải nhập mã phòng)</option>
+                    </select>
+                </div>
+                <div class="col form-group">
+                    <label>Thời gian (Phút):</label>
+                    <input type="number" id="englishTime" class="form-input" placeholder="VD: 15" value="15">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tên bài tập:</label>
+                <input type="text" id="englishTitle" class="form-input" placeholder="VD: Unit 1 - Global Warming">
+            </div>
+
+            <div class="form-group">
+                <label>Nội dung (Text):</label>
+                <textarea id="englishContent" class="form-input" style="min-height: 250px; font-family: monospace; font-size: 15px; line-height: 1.6;" placeholder="Nhập nội dung bài tập vào đây..."></textarea>
+            </div>
+
+            <button class="btn-create" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); box-shadow: 0 10px 20px -10px rgba(245, 158, 11, 0.6);" onclick="createEnglishExam()">Tạo Mã Phòng & Lưu Bài</button>
         </div>
 
         <div id="tab-manage" class="tab-content">
@@ -772,8 +824,16 @@
                     
                     const statusBadge = isActive ? '<span class="badge badge-active">Đang mở</span>' : '<span class="badge badge-closed">Đã khóa</span>';
                     const visibilityBadge = isHidden ? '<span class="badge badge-hidden" style="margin-left:5px;">🙈 Đang Ẩn</span>' : '';
-                    const typeBadge = isPdf ? '<span class="badge badge-pdf">📄 Đề PDF</span>' : '<span class="badge" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; margin-left:5px;">✍️ Đề Text</span>';
+                    // Phân loại nhãn hiển thị cho Đề Tiếng Anh
+                    let typeBadge = '';
+                    if (data.type === 'pdf') typeBadge = '<span class="badge badge-pdf">📄 Đề PDF</span>';
+                    else if (data.type === 'vocab') typeBadge = '<span class="badge" style="background:#FEF08A; color:#854D0E; border:1px solid #FDE047; margin-left:5px;">📚 Từ Vựng</span>';
+                    else if (data.type === 'reading') typeBadge = '<span class="badge" style="background:#E9D5FF; color:#6B21A8; border:1px solid #D8B4FE; margin-left:5px;">👁️‍🗨️ Đọc Hiểu</span>';
+                    else if (data.type === 'writing') typeBadge = '<span class="badge" style="background:#FFEDD5; color:#C2410C; border:1px solid #FDBA74; margin-left:5px;">✍️ Viết</span>';
+                    else typeBadge = '<span class="badge" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; margin-left:5px;">✍️ Đề Text</span>';
 
+                    // Ẩn nút xem bảng điểm đối với Luyện Từ Vựng (Vì chỉ là học tập, không chấm điểm)
+                    const btnScoreHtml = (data.type === 'vocab') ? '' : `<button class="btn-sm btn-scores" onclick="viewScores('${data.id}', '${data.title.replace(/'/g, "\\'")}')">📊 Xem Bảng Điểm</button>`;
                     // Đóng gói data để đẩy vào hàm Edit
                     const examDataEncoded = encodeURIComponent(JSON.stringify(data));
 
@@ -828,11 +888,10 @@
                 document.getElementById('editPdfLink').value = exam.pdfLinkQuestion || '';
                 document.getElementById('editPdfLinkAnswer').value = exam.pdfLinkAnswer || '';
                 document.getElementById('editPdfYoutube').value = exam.pdfYoutubeLink || '';
-                
-                // Giải mã mảng câu hỏi để lấy chuỗi đáp án ABCD
                 const currentKey = exam.questions ? exam.questions.map(q => q.correctAnswer).join('') : '';
                 document.getElementById('editPdfKey').value = currentKey;
             } else {
+                // Áp dụng chung thông báo không được sửa nội dung cho Đề Text và các Đề Ngoại Ngữ
                 document.getElementById('editPdfFields').style.display = 'none';
                 document.getElementById('editTextNotice').style.display = 'block';
             }
@@ -1078,6 +1137,135 @@
         document.onkeydown = function(e) {
             if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
                 return false;
+            }
+        };
+
+
+
+
+        // =============================================== script cho phan tieng anh
+        const originalSwitchTab = window.switchTab;
+        window.switchTab = function(tabName) {
+            const btnEnglish = document.getElementById('btnTabEnglish');
+            const tabEnglish = document.getElementById('tab-create-english');
+            
+            if (tabName === 'create_english') {
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                
+                if(btnEnglish) btnEnglish.classList.add('active');
+                if(tabEnglish) tabEnglish.classList.add('active');
+                document.getElementById('tabMenu').style.display = 'flex';
+            } else {
+                originalSwitchTab(tabName);
+                if(btnEnglish) btnEnglish.classList.remove('active');
+            }
+        };
+        // Xử lý đổi hướng dẫn hiển thị theo từng Kỹ năng
+        window.changeEnglishInstruction = function() {
+            const type = document.getElementById('englishType').value;
+            const instBox = document.getElementById('englishInstruction');
+            if(type === 'vocab') {
+                instBox.innerHTML = `<strong>💡 Cú pháp Học Từ Vựng / Điền khuyết:</strong><br>
+                Nhập theo dạng: <b>Từ tiếng anh = Nghĩa tiếng Việt</b> hoặc <b>Câu tiếng anh có ___ = Từ cần điền</b><br>
+                <i>Ví dụ:</i><br>Environment = Môi trường<br>She is very ___ today. = beautiful`;
+            } else if (type === 'reading') {
+                instBox.innerHTML = `<strong>💡 Cú pháp Reading:</strong><br>Dán toàn bộ đoạn văn tiếng Anh vào đây. Tạm thời hệ thống sẽ lưu nguyên văn bản để học sinh đọc. Việc nhúng từ vựng vào đoạn văn sẽ được tích hợp ở trang Student sau.`;
+            } else {
+                instBox.innerHTML = `<strong>💡 Cú pháp Luyện Viết (Gõ từ vựng):</strong><br>
+                Nhập theo dạng: <b>Từ tiếng Anh = Nghĩa tiếng Việt</b>.<br>
+                Hệ thống sẽ hiển thị nghĩa tiếng Việt và yêu cầu học sinh tự gõ lại từ tiếng Anh cho đúng chính tả.<br>
+                <i>Ví dụ:</i><br>Beautiful = Xinh đẹp<br>Environment = Môi trường`;
+            }
+        };
+        setTimeout(changeEnglishInstruction, 100); // Gọi 1 lần lúc vừa load form
+
+        // Xử lý tạo và lưu bài tập Tiếng Anh
+        // Xử lý tạo và lưu bài tập Tiếng Anh
+        window.createEnglishExam = async function() {
+            const type = document.getElementById('englishType').value;
+            const folderId = document.getElementById('vocabFolder').value;
+            const visibility = document.getElementById('englishVisibility').value;
+            const timeLimit = document.getElementById('englishTime').value;
+            const title = document.getElementById('englishTitle').value.trim();
+            const rawContent = document.getElementById('englishContent').value.trim();
+
+            if (!folderId || !title || !rawContent || !timeLimit) return Swal.fire('Lỗi', 'Vui lòng điền đầy đủ các trường thông tin!', 'warning');
+
+            let questions = [];
+            let passageText = ""; // Biến lưu trữ đoạn văn
+
+            // NẾU LÀ VOCAB HOẶC WRITING -> PARSE TÁCH TỪ VÀ NGHĨA BẰNG DẤU =
+            if (type === 'vocab' || type === 'writing') {
+                const lines = rawContent.split('\n');
+                for (let line of lines) {
+                    if (line.includes('=')) {
+                        const parts = line.split('=');
+                        questions.push({ word: parts[0].trim(), meaning: parts[1].trim() });
+                    }
+                }
+                if (questions.length === 0) return Swal.fire('Lỗi', 'Vui lòng nhập đúng định dạng có dấu bằng (=)', 'error');
+            } 
+            // Nếu là Reading... (giữ nguyên phần sau)
+            else if (type === 'reading') {
+                // Tách đoạn văn ra khỏi thẻ [PASSAGE]
+                const passageMatch = rawContent.match(/\[PASSAGE\]([\s\S]*?)\[\/PASSAGE\]/i);
+                if (!passageMatch) return Swal.fire('Lỗi', 'Vui lòng bọc đoạn văn trong thẻ [PASSAGE] và [/PASSAGE]', 'error');
+                
+                passageText = passageMatch[1].trim();
+                
+                // Lấy phần còn lại (các câu trắc nghiệm) và đưa vào hàm parse cũ
+                const restContent = rawContent.replace(/\[PASSAGE\]([\s\S]*?)\[\/PASSAGE\]/i, '');
+                questions = parseQuestions(restContent); 
+                
+                if (questions.length === 0) return Swal.fire('Lỗi', 'Không tìm thấy câu hỏi A B C D nào dưới đoạn văn!', 'error');
+            } 
+            else {
+                questions = [{ content: rawContent }];
+            }
+
+            const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+            Swal.fire({ title: 'Đang tạo phòng...', didOpen: () => Swal.showLoading() });
+            
+            try {
+                await addDoc(collection(db, "exams"), {
+                    type: type,
+                    title: title,
+                    timeLimit: parseInt(timeLimit),
+                    roomCode: roomCode,
+                    folderId: folderId,
+                    teacherId: currentUser.uid,
+                    teacherName: currentUser.displayName,
+                    questions: questions,
+                    passage: passageText, // Lưu đoạn văn lên Database
+                    rawContent: rawContent,
+                    status: 'active',
+                    visibility: visibility,
+                    createdAt: serverTimestamp()
+                });
+
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'Tạo phòng thành công!', 
+                    html: `Đã lưu cấu trúc bài <b>${title}</b><br>Mã phòng luyện tập:<br><b style="color:#D97706; font-size: 28px; letter-spacing: 5px;">${roomCode}</b>` 
+                }).then(() => {
+                    document.getElementById('englishTitle').value = '';
+                    document.getElementById('englishContent').value = '';
+                    switchTab('manage');
+                });
+            } catch (e) { Swal.fire('Lỗi', e.message, 'error'); }
+        };
+        // Gắn danh sách thư mục vào thẻ select của Vocab khi load
+        const originalLoadFolders = window.loadFolders;
+        window.loadFolders = async function() {
+            await originalLoadFolders(); // Chạy code cũ
+            // Cập nhật thêm cho Thẻ Select Vocab
+            const selectVocab = document.getElementById('vocabFolder');
+            if(selectVocab) {
+                selectVocab.innerHTML = '<option value="">-- Chọn thư mục --</option>';
+                for (const [id, name] of Object.entries(userFolders)) {
+                    selectVocab.innerHTML += `<option value="${id}">${name}</option>`;
+                }
             }
         };
     </script>
