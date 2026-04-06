@@ -1169,8 +1169,17 @@
                 instBox.innerHTML = `<strong>💡 Cú pháp Học Từ Vựng / Điền khuyết:</strong><br>
                 Nhập theo dạng: <b>Từ tiếng anh = Nghĩa tiếng Việt</b> hoặc <b>Câu tiếng anh có ___ = Từ cần điền</b><br>
                 <i>Ví dụ:</i><br>Environment = Môi trường<br>She is very ___ today. = beautiful`;
-            } else if (type === 'reading') {
-                instBox.innerHTML = `<strong>💡 Cú pháp Reading:</strong><br>Dán toàn bộ đoạn văn tiếng Anh vào đây. Tạm thời hệ thống sẽ lưu nguyên văn bản để học sinh đọc. Việc nhúng từ vựng vào đoạn văn sẽ được tích hợp ở trang Student sau.`;
+            }  else if (type === 'reading') {
+                instBox.innerHTML = `<strong>💡 Cú pháp Đọc Hiểu (Split-screen):</strong><br>
+                Bọc đoạn văn bản cần đọc vào giữa 2 thẻ <b>[PASSAGE]</b> và <b>[/PASSAGE]</b>.<br>
+                Bên dưới đoạn văn, nhập các câu hỏi trắc nghiệm (A, B, C, D) và Đáp án giống như đề Text bình thường.<br>
+                <i>Ví dụ:</i><br>
+                <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; margin-top: 8px; font-family: monospace;">
+                [PASSAGE]<br>Nội dung đoạn văn tiếng Anh...<br>[/PASSAGE]<br><br>
+                Câu 1: What is the main idea?<br>
+                A. ...<br>B. ...<br>C. ...<br>D. ...<br>
+                Đáp án: A
+                </div>`;
             } else {
                 instBox.innerHTML = `<strong>💡 Cú pháp Luyện Viết (Gõ từ vựng):</strong><br>
                 Nhập theo dạng: <b>Từ tiếng Anh = Nghĩa tiếng Việt</b>.<br>
