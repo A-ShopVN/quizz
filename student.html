@@ -426,11 +426,16 @@
         <button onclick="showStep('step-english-list')" class="btn btn-outline" style="margin-top: 20px; border: none; color: #6B21A8;">⬅ Thoát Luyện Tập</button>
     </div>
     <div id="step-writing-play" class="glass-container exam-container" style="display: none; text-align: center;">
-        <div class="exam-header" style="background: #FFF7ED; border-color: #FFEDD5;">
-            <div id="writingTitleDisplay" style="font-weight: 800; color: #EA580C; font-size: 18px;">---</div>
-            <div class="timer-box" style="background: #FFEDD5; color: #EA580C;">
-                <span id="writingProgress">1/10</span>
+        <div class="exam-header" style="background: #FAF5FF; border-color: #E9D5FF; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div id="readingTitleDisplay" style="font-weight: 800; color: #6B21A8; font-size: 18px;">---</div>
+            
+            <div class="timer-box" style="background: #F3E8FF; color: #9333EA; font-size: 18px; padding: 6px 16px;">
+                ⏱ <span id="readingTimerDisplay">00:00</span>
             </div>
+
+            <button onclick="submitReading()" class="btn-submit-reading" style="margin:0;">
+                <span>🚀 Nộp Bài Ngay</span>
+            </button>
         </div>
 
         <div class="fill-blank-container" id="writingBox" style="display: block;">
@@ -747,6 +752,59 @@
 
                 shuffledQuestions = prepareShuffledExam(currentExam.questions, currentExam.type);
                 cheatWarnings = 0;
+                // ===============================================
+            // PHÂN LUỒNG: NẾU ĐÂY LÀ ĐỀ NGOẠI NGỮ (READING / WRITING / VOCAB)
+            // ===============================================
+            if (currentExam.type === 'reading') {
+                document.getElementById('readingTitleDisplay').innerText = currentExam.title;
+                document.getElementById('readingPassageContent').innerHTML = currentExam.passage || "<i>Không có đoạn văn liệu</i>";
+                
+                const qContainer = document.getElementById('readingQuestionsContainer');
+                qContainer.innerHTML = '';
+                
+                window.currentReadingQuestions = currentExam.questions;
+                window.readingDraft = {};
+                
+                currentExam.questions.forEach((q, idx) => {
+                    let html = `<div class="question-card" style="padding: 20px; margin-bottom: 15px; border-radius: 16px;"><div class="question-text" style="font-size:15px; margin-bottom:15px;">Câu ${idx + 1}: ${q.question}</div><div class="options">`;
+                    ['A', 'B', 'C', 'D'].forEach(opt => {
+                        html += `<label class="option-label" style="padding:10px 15px; font-size:14px; border-radius: 12px;"><input type="radio" name="rq_${idx}" value="${opt}" onchange="readingDraft['q_${idx}'] = '${opt}'"> ${opt}. ${q.options[opt]}</label>`;
+                    });
+                    html += `</div></div>`;
+                    qContainer.innerHTML += html;
+                });
+                
+                showStep('step-reading-play');
+                Swal.close();
+                isExamActive = true; 
+                startReadingTimer(currentExam.timeLimit); // Khởi động đồng hồ
+                return; // Ngắt, không chạy luồng đề trắc nghiệm cũ
+            }
+            
+            if (currentExam.type === 'writing') {
+                window.currentWritingSet = currentExam.questions;
+                window.currentWritingIndex = 0;
+                document.getElementById('writingTitleDisplay').innerText = currentExam.title;
+                updateWritingUI();
+                
+                showStep('step-writing-play');
+                Swal.close();
+                return; // Ngắt
+            }
+
+            if (currentExam.type === 'vocab') {
+                currentVocabSet = currentExam.questions;
+                currentVocabIndex = 0;
+                document.getElementById('vocabTitleDisplay').innerText = currentExam.title;
+                updateFlashcardUI();
+                
+                showStep('step-vocab-play');
+                Swal.close();
+                return; // Ngắt
+            }
+            // ===============================================
+            
+            // (Phần code cũ bên dưới giữ nguyên: shuffledQuestions = prepareShuffledExam...)
 
                 const endTime = Date.now() + currentExam.timeLimit * 60 * 1000;
                 localStorage.setItem('exam_active_session', JSON.stringify({
@@ -1150,11 +1208,13 @@
         };
 
         // 3. Xử lý khi học sinh click vào bài tập
+        // 3. Xử lý khi học sinh click vào bài tập (Từ danh sách)
         window.startEnglishSession = function(skillType, index) {
             const exam = window.tempEnglishExams[index];
             document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; });
 
             if (skillType === 'vocab') {
+                // Từ vựng chỉ lật thẻ học chơi, không chấm điểm -> Vào thẳng
                 currentVocabSet = exam.questions;
                 currentVocabIndex = 0;
                 document.getElementById('vocabTitleDisplay').innerText = exam.title;
@@ -1164,45 +1224,13 @@
                 vocabPlay.style.display = 'block';
                 setTimeout(() => { vocabPlay.style.opacity = '1'; }, 30);
             } 
-            else if (skillType === 'reading') {
-                document.getElementById('readingTitleDisplay').innerText = exam.title;
-                document.getElementById('readingPassageContent').innerHTML = exam.passage || "<i>Không có đoạn văn liệu</i>";
-                
-                const qContainer = document.getElementById('readingQuestionsContainer');
-                qContainer.innerHTML = '';
-                
-                // Lưu biến toàn cục để chấm điểm
-                window.currentReadingQuestions = exam.questions;
-                window.readingDraft = {};
-                
-                // Gen giao diện câu hỏi bên phải
-                exam.questions.forEach((q, idx) => {
-                    let html = `<div class="question-card" style="padding: 20px; margin-bottom: 15px; border-radius: 16px;"><div class="question-text" style="font-size:15px; margin-bottom:15px;">Câu ${idx + 1}: ${q.question}</div><div class="options">`;
-                    ['A', 'B', 'C', 'D'].forEach(opt => {
-                        html += `<label class="option-label" style="padding:10px 15px; font-size:14px; border-radius: 12px;"><input type="radio" name="rq_${idx}" value="${opt}" onchange="readingDraft['q_${idx}'] = '${opt}'"> ${opt}. ${q.options[opt]}</label>`;
-                    });
-                    html += `</div></div>`;
-                    qContainer.innerHTML += html;
-                });
-                
-                const readPlay = document.getElementById('step-reading-play');
-                readPlay.style.display = 'block';
-                setTimeout(() => { readPlay.style.opacity = '1'; }, 30);
+            else if (skillType === 'reading' || skillType === 'writing') {
+                // Reading và Writing cần lưu điểm/danh tính -> Chuyển sang form nhập Tên
+                currentExam = exam; 
+                document.getElementById('examTitleDisplay').innerText = exam.title;
+                showStep('step-info');
             }
-            // ... (Phần vocab và reading ở trên giữ nguyên)
-            else if (skillType === 'writing') {
-                window.currentWritingSet = exam.questions;
-                window.currentWritingIndex = 0;
-                
-                document.getElementById('writingTitleDisplay').innerText = exam.title;
-                updateWritingUI();
-                
-                const writingPlay = document.getElementById('step-writing-play');
-                writingPlay.style.display = 'block';
-                setTimeout(() => { writingPlay.style.opacity = '1'; }, 30);
-            }
-        }; // <-- Đóng hàm startEnglishSession tại đây
-
+        };
         // ==========================================
         // CÁC HÀM XỬ LÝ RIÊNG CHO LUYỆN VIẾT TỪ VỰNG
         // ==========================================
@@ -1271,27 +1299,93 @@
         };
 
         // Hàm Nộp Bài Reading tính điểm ngay
-        window.submitReading = function() {
-            Swal.fire({ title: 'Chốt nộp bài?', icon: 'question', showCancelButton: true, confirmButtonColor: '#9333EA', confirmButtonText: 'Nộp Ngay' }).then((result) => { 
-                if (result.isConfirmed) {
-                    let correct = 0;
-                    const total = window.currentReadingQuestions.length;
-                    
-                    window.currentReadingQuestions.forEach((q, idx) => {
-                        if (window.readingDraft[`q_${idx}`] === q.correctAnswer) correct++;
+        let readingTimerInterval;
+        
+        // Hàm chạy đồng hồ đếm ngược
+        window.startReadingTimer = function(minutes) {
+            let timeTotal = Math.floor(minutes * 60);
+            const display = document.getElementById('readingTimerDisplay');
+            clearInterval(readingTimerInterval);
+            
+            readingTimerInterval = setInterval(() => {
+                let m = Math.floor(timeTotal / 60); let s = timeTotal % 60;
+                display.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                
+                if (timeTotal <= 60) { 
+                    display.style.color = '#EF4444'; 
+                    display.parentElement.style.background = '#FEF2F2'; 
+                } else { 
+                    display.style.color = '#9333EA'; 
+                    display.parentElement.style.background = '#F3E8FF'; 
+                }
+                
+                if (timeTotal <= 0) { 
+                    clearInterval(readingTimerInterval); 
+                    submitReading(true); // Hết giờ tự động nộp
+                }
+                timeTotal--;
+            }, 1000);
+        };
+
+        // Hàm tính điểm và Lưu lên cơ sở dữ liệu Firebase
+        window.submitReading = async function(isAuto = false) {
+            const processSubmit = async () => {
+                clearInterval(readingTimerInterval);
+                isExamActive = false;
+                Swal.fire({ title: 'Đang chấm điểm...', didOpen: () => Swal.showLoading() });
+                
+                let correct = 0;
+                const total = window.currentReadingQuestions.length;
+                let dbAnswers = {};
+                
+                window.currentReadingQuestions.forEach((q, idx) => {
+                    const studentAns = window.readingDraft[`q_${idx}`] || null;
+                    dbAnswers[`q_${idx}`] = studentAns;
+                    if (studentAns === q.correctAnswer) correct++;
+                });
+                
+                const score = parseFloat(((correct / total) * 10).toFixed(1));
+                
+                try {
+                    // LƯU KẾT QUẢ LÊN FIREBASE ĐỂ ADMIN CÓ THỂ XEM
+                    await addDoc(collection(db, "results"), {
+                        examId: currentExam.id, 
+                        roomCode: currentExam.roomCode, 
+                        studentUid: currentStudent.uid, 
+                        studentName: currentStudent.name, 
+                        studentClass: currentStudent.class, 
+                        score: score,
+                        correctCount: correct, 
+                        totalQuestions: total, 
+                        answers: dbAnswers, 
+                        cheatWarnings: cheatWarnings || 0, 
+                        submittedAt: serverTimestamp()
                     });
-                    
-                    const score = ((correct / total) * 10).toFixed(1);
-                    
+
                     Swal.fire({
                         icon: 'success', title: 'Hoàn thành bài đọc!',
                         html: `Kết quả của bạn:<br><b style="font-size: 40px; color: #9333EA;">${score}</b> điểm<br><span style="color:#64748B;">Đúng ${correct}/${total} câu</span>`,
-                        confirmButtonText: 'Tuyệt vời', confirmButtonColor: '#9333EA'
-                    }).then(() => { showStep('step-english-list'); });
+                        confirmButtonText: 'Quay lại danh sách', confirmButtonColor: '#9333EA',
+                        allowOutsideClick: false
+                    }).then(() => { 
+                        // Nếu vào bằng mã phòng ẩn thì văng ra sảnh, nếu vào bằng list thì quay lại list
+                        if (window.tempEnglishExams) showStep('step-english-list'); 
+                        else showStep('step-room');
+                    });
+                } catch (error) {
+                    Swal.fire('Lỗi', 'Không thể lưu điểm: ' + error.message, 'error');
                 }
-            });
-        };
+            };
 
+            // Hỏi xác nhận nếu nộp thủ công, ép nộp luôn nếu hết giờ
+            if (isAuto === true) {
+                Swal.fire({ title: 'Hết giờ!', text: 'Hệ thống đang tự động nộp bài...', icon: 'info', timer: 2000, showConfirmButton: false }).then(processSubmit);
+            } else {
+                Swal.fire({ title: 'Chốt nộp bài?', icon: 'question', showCancelButton: true, confirmButtonColor: '#9333EA', confirmButtonText: 'Nộp Ngay' }).then((result) => { 
+                    if (result.isConfirmed) processSubmit(); 
+                });
+            }
+        };
         // 4. Các hàm điều khiển Flashcard
         // 4. Các hàm điều khiển Hiển thị & Chấm điểm tức thì
         window.updateFlashcardUI = function() {
