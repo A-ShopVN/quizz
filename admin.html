@@ -201,6 +201,51 @@
             h2 { font-size: 22px; }
             .modal-content { padding: 20px; }
         }
+        /* ========================================= */
+        /* CSS CHO BỘ LỌC PHÂN LOẠI                  */
+        /* ========================================= */
+        /* ========================================= */
+        /* CSS CHO BỘ LỌC PHÂN LOẠI (KIỂU THẺ DROPDOWN)*/
+        /* ========================================= */
+        .custom-filter-box {
+            margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+            background: #F8FAFC; padding: 6px 16px; border-radius: 16px;
+            border: 1px solid #E2E8F0; width: fit-content; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .custom-filter-label { font-weight: 800; color: #64748B; font-size: 13px; text-transform: uppercase; }
+        
+        /* Cấu trúc thẻ Dropdown */
+        .dropdown-wrapper { position: relative; user-select: none; }
+        .dropdown-trigger {
+            display: flex; justify-content: space-between; align-items: center; gap: 20px;
+            padding: 10px 16px; border-radius: 12px; border: 1px solid #E2E8F0;
+            background: #FFFFFF; color: #4F46E5; font-weight: 700; font-size: 14px;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); min-width: 220px;
+        }
+        .dropdown-trigger:hover { border-color: #A5B4FC; box-shadow: 0 6px 15px rgba(79, 70, 229, 0.12); transform: translateY(-1px); }
+        .dropdown-trigger .arrow { transition: transform 0.3s; font-size: 12px; }
+        .dropdown-wrapper.active .dropdown-trigger { border-color: #6366F1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15); }
+        .dropdown-wrapper.active .arrow { transform: rotate(180deg); }
+
+        /* Menu thẻ lơ lửng (Floating Menu) */
+        .dropdown-menu {
+            position: absolute; top: calc(100% + 8px); left: 0; width: 100%;
+            background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); display: none; flex-direction: column;
+            z-index: 100; overflow: hidden; padding: 8px;
+            animation: dropFade 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; transform-origin: top center;
+        }
+        .dropdown-wrapper.active .dropdown-menu { display: flex; }
+        @keyframes dropFade { 0% { opacity: 0; transform: scaleY(0.9); } 100% { opacity: 1; transform: scaleY(1); } }
+
+        .dropdown-item {
+            padding: 12px 14px; font-size: 14px; font-weight: 600; color: #475569;
+            cursor: pointer; border-radius: 10px; transition: 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        .dropdown-item:hover { background: #F1F5F9; color: #1E293B; }
+        .dropdown-item.active { background: #EEF2FF; color: #4F46E5; }
+
+        
     </style>
 </head>
 <body>
@@ -345,6 +390,7 @@
                     <label>Kỹ năng luyện tập:</label>
                     <select id="englishType" class="form-input" onchange="changeEnglishInstruction()">
                         <option value="vocab">📚 Vocabulary & Fill-in-blank (Từ vựng / Điền khuyết)</option>
+                        <option value="collocation">🔗 Collocations / Phrasal Verbs</option>
                         <option value="reading">👁️‍🗨️ Reading (Đọc hiểu văn bản)</option>
                         <option value="writing">✍️ Writing (Viết lại từ)</option>
                     </select>
@@ -388,6 +434,23 @@
         <div id="tab-manage" class="tab-content">
             <h2 style="display: flex; justify-content: space-between; align-items: center;">
                 Danh sách Bài Thi
+                <div class="custom-filter-box">
+                    <label class="custom-filter-label">Phân loại:</label>
+                    <div class="dropdown-wrapper" id="filterDropdownWrapper">
+                        <input type="hidden" id="examFilter" value="all">
+                        
+                        <div class="dropdown-trigger" onclick="toggleCustomDropdown(event)">
+                            <span id="dropdownSelectedText">🌟 Tất cả bài thi</span>
+                            <span class="arrow">▼</span>
+                        </div>
+                        
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item active" onclick="selectFilterOption('all', '🌟 Tất cả bài thi', this)">🌟 Tất cả bài thi</div>
+                            <div class="dropdown-item" onclick="selectFilterOption('english_zone', '🇬🇧 Góc Ngoại Ngữ', this)">🇬🇧 Góc Ngoại Ngữ</div>
+                            <div class="dropdown-item" onclick="selectFilterOption('normal', '📁 Các môn học khác', this)">📁 Các môn học khác</div>
+                        </div>
+                    </div>
+                </div>
                 <button onclick="loadExams()" title="Làm mới danh sách">🔄 Làm mới</button>
             </h2>
             <div id="examListContainer" class="exam-grid">
@@ -526,7 +589,9 @@
             <div id="modalReviewContainer"></div>
         </div>
     </div>
+    
 
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
@@ -557,6 +622,7 @@
         // -----------------------------------------
         // QUẢN LÝ THƯ MỤC
         // -----------------------------------------
+        // QUẢN LÝ THƯ MỤC VÀ TỰ ĐỘNG TẠO BỘ LỌC
         window.loadFolders = async function() {
             if (!currentUser) return;
             try {
@@ -577,22 +643,68 @@
                     selectTextEl.innerHTML += optionHtml;
                     selectPdfEl.innerHTML += optionHtml;
                 });
+
+                // ========================================================
+                // NÂNG CẤP: TỰ ĐỘNG RÁP CÁC THƯ MỤC VÀO THẺ DROPDOWN LỌC
+                // ========================================================
+                const dropdownMenu = document.querySelector('.dropdown-menu');
+                if (dropdownMenu) {
+                    // Giữ lại 2 mục mặc định
+                    let menuHtml = `
+                        <div class="dropdown-item active" onclick="selectFilterOption('all', '🌟 Tất cả bài thi', this)">🌟 Tất cả bài thi</div>
+                        <div class="dropdown-item" onclick="selectFilterOption('english_zone', '🇬🇧 Góc Ngoại Ngữ', this)">🇬🇧 Góc Ngoại Ngữ</div>
+                    `;
+                    // Lặp qua các thư mục lấy từ Database để tạo nút bấm động
+                    for (const [id, name] of Object.entries(userFolders)) {
+                        menuHtml += `<div class="dropdown-item" onclick="selectFilterOption('${id}', '📁 ${name}', this)">📁 ${name}</div>`;
+                    }
+                    dropdownMenu.innerHTML = menuHtml; // Đổ vào menu
+                }
+
             } catch (e) { console.error("Lỗi tải thư mục:", e); }
         }
-
         window.createNewFolder = async function() {
             const { value: folderName } = await Swal.fire({
-                title: 'Tạo Thư Mục Mới', input: 'text', inputLabel: 'Tên môn học hoặc khối lớp', inputPlaceholder: 'Nhập tên thư mục...', showCancelButton: true, confirmButtonText: 'Tạo', cancelButtonText: 'Hủy'
+                title: 'Tạo Thư Mục Mới', 
+                input: 'text', 
+                inputLabel: 'Tên môn học hoặc khối lớp', 
+                inputPlaceholder: 'Nhập tên thư mục...', 
+                showCancelButton: true, 
+                confirmButtonText: 'Tạo', 
+                cancelButtonText: 'Hủy'
             });
+            
             if (folderName) {
+                const newFolderName = folderName.trim();
+                
+                // KIỂM TRA TRÙNG LẶP TRIỆT ĐỂ (Không phân biệt hoa thường)
+                let isDuplicate = false;
+                for (let folderId in userFolders) {
+                    if (userFolders[folderId].toLowerCase() === newFolderName.toLowerCase()) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (isDuplicate) {
+                    return Swal.fire('Lỗi', `Thư mục "${newFolderName}" đã tồn tại trong danh sách!`, 'warning');
+                }
+
+                // Nếu không trùng thì mới tiến hành tạo mới
                 Swal.fire({ title: 'Đang tạo...', didOpen: () => Swal.showLoading() });
                 try {
-                    await addDoc(collection(db, "folders"), { name: folderName.trim(), teacherId: currentUser.uid, createdAt: serverTimestamp() });
-                    Swal.fire('Thành công', 'Đã tạo thư mục!', 'success'); loadFolders();
-                } catch (e) { Swal.fire('Lỗi', e.message, 'error'); }
+                    await addDoc(collection(db, "folders"), { 
+                        name: newFolderName, 
+                        teacherId: currentUser.uid, 
+                        createdAt: serverTimestamp() 
+                    });
+                    Swal.fire('Thành công', 'Đã tạo thư mục!', 'success'); 
+                    loadFolders();
+                } catch (e) { 
+                    Swal.fire('Lỗi', e.message, 'error'); 
+                }
             }
         }
-
         window.loadSystemSettings = async function() {
             if (currentUserRole !== 'admin') return;
             try {
@@ -838,7 +950,7 @@
                     const examDataEncoded = encodeURIComponent(JSON.stringify(data));
 
                     container.innerHTML += `
-                        <div class="exam-card">
+                       <div class="exam-card admin-exam-item" data-folder="${data.folderId}">
                             <h3>${data.title}</h3>
                             <div><span class="folder-tag">📁 ${folderName}</span></div>
                             <div class="room-code" style="${isPdf ? 'color: #10B981; border-color: #A7F3D0; background: #ECFDF5;' : ''}">${data.roomCode}</div>
@@ -1167,8 +1279,13 @@
             const instBox = document.getElementById('englishInstruction');
             if(type === 'vocab') {
                 instBox.innerHTML = `<strong>💡 Cú pháp Học Từ Vựng / Điền khuyết:</strong><br>
-                Nhập theo dạng: <b>Từ tiếng anh = Nghĩa tiếng Việt</b> hoặc <b>Câu tiếng anh có ___ = Từ cần điền</b><br>
-                <i>Ví dụ:</i><br>Environment = Môi trường<br>She is very ___ today. = beautiful`;
+                Nhập theo dạng: <b>Từ tiếng Anh = Nghĩa tiếng Việt = Câu ví dụ = Emoji</b><br>
+                Đối với câu điền khuyết (___), có thể thêm <b>(gợi ý)</b> ở cuối câu!<br>
+                <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; margin-top: 8px; font-family: monospace;">
+                <i>Ví dụ:</i><br>
+                Apple = Quả táo = A red fruit. = 🍎<br>
+                She is very ___ today. (Xinh đẹp) = beautiful
+                </div>`;
             }  else if (type === 'reading') {
                 instBox.innerHTML = `<strong>💡 Cú pháp Đọc Hiểu (Split-screen):</strong><br>
                 Bọc đoạn văn bản cần đọc vào giữa 2 thẻ <b>[PASSAGE]</b> và <b>[/PASSAGE]</b>.<br>
@@ -1180,7 +1297,19 @@
                 A. ...<br>B. ...<br>C. ...<br>D. ...<br>
                 Đáp án: A
                 </div>`;
-            } else {
+            } 
+            
+                // Thêm đoạn else if này vào hàm changeEnglishInstruction()
+                else if (type === 'collocation') {
+                    instBox.innerHTML = `<strong>💡 Cú pháp Học Collocation / Phrasal Verbs:</strong><br>
+                    Nhập theo dạng: <b>Cụm từ tiếng Anh = Nghĩa tiếng Việt = Câu ví dụ áp dụng</b><br>
+                    <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; margin-top: 8px; font-family: monospace;">
+                    <i>Ví dụ:</i><br>
+                    Take advantage of = Tận dụng = You should take advantage of this discount.<br>
+                    Bear in mind = Ghi nhớ = Bear in mind that the test is tomorrow.
+                    </div>`;
+                }
+            else {
                 instBox.innerHTML = `<strong>💡 Cú pháp Luyện Viết (Gõ từ vựng):</strong><br>
                 Nhập theo dạng: <b>Từ tiếng Anh = Nghĩa tiếng Việt</b>.<br>
                 Hệ thống sẽ hiển thị nghĩa tiếng Việt và yêu cầu học sinh tự gõ lại từ tiếng Anh cho đúng chính tả.<br>
@@ -1193,7 +1322,8 @@
         // Xử lý tạo và lưu bài tập Tiếng Anh
         window.createEnglishExam = async function() {
             const type = document.getElementById('englishType').value;
-            const folderId = document.getElementById('vocabFolder').value;
+            // CỐ ĐỊNH TAG CHUNG CHO MỌI BÀI TIẾNG ANH ĐỂ DỄ QUẢN LÝ
+            const folderId = 'english_zone';
             const visibility = document.getElementById('englishVisibility').value;
             const timeLimit = document.getElementById('englishTime').value;
             const title = document.getElementById('englishTitle').value.trim();
@@ -1205,16 +1335,23 @@
             let passageText = ""; // Biến lưu trữ đoạn văn
 
             // NẾU LÀ VOCAB HOẶC WRITING -> PARSE TÁCH TỪ VÀ NGHĨA BẰNG DẤU =
-            if (type === 'vocab' || type === 'writing') {
+            // NẾU LÀ VOCAB HOẶC WRITING -> PARSE TÁCH TỪ VÀ NGHĨA BẰNG DẤU =
+            // NẾU LÀ VOCAB HOẶC WRITING -> PARSE TÁCH TỪ VÀ NGHĨA BẰNG DẤU =
+            if (type === 'vocab' || type === 'writing' || type === 'collocation') {
                 const lines = rawContent.split('\n');
                 for (let line of lines) {
                     if (line.includes('=')) {
                         const parts = line.split('=');
-                        questions.push({ word: parts[0].trim(), meaning: parts[1].trim() });
+                        questions.push({ 
+                            word: parts[0] ? parts[0].trim() : '', 
+                            meaning: parts[1] ? parts[1].trim() : '',
+                            example: parts[2] ? parts[2].trim() : '', // Lệnh hứng câu ví dụ tiếng Anh!
+                            image: parts[3] ? parts[3].trim() : null  // Emoji/Link ảnh bị đẩy lùi xuống vị trí thứ 4
+                        });
                     }
                 }
                 if (questions.length === 0) return Swal.fire('Lỗi', 'Vui lòng nhập đúng định dạng có dấu bằng (=)', 'error');
-            } 
+            }
             // Nếu là Reading... (giữ nguyên phần sau)
             else if (type === 'reading') {
                 // Tách đoạn văn ra khỏi thẻ [PASSAGE]
@@ -1233,30 +1370,61 @@
                 questions = [{ content: rawContent }];
             }
 
-            const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
-            Swal.fire({ title: 'Đang tạo phòng...', didOpen: () => Swal.showLoading() });
+            // TẠO MÃ PHÒNG VÀ LƯU LÊN DATABASE
+            const roomCode1 = Math.floor(100000 + Math.random() * 900000).toString();
+            Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
             
             try {
+                // 1. LƯU BÀI GỐC (Vocab / Reading / Writing) NHƯ BÌNH THƯỜNG
                 await addDoc(collection(db, "exams"), {
                     type: type,
                     title: title,
                     timeLimit: parseInt(timeLimit),
-                    roomCode: roomCode,
+                    roomCode: roomCode1,
                     folderId: folderId,
                     teacherId: currentUser.uid,
                     teacherName: currentUser.displayName,
                     questions: questions,
-                    passage: passageText, // Lưu đoạn văn lên Database
+                    passage: passageText, 
                     rawContent: rawContent,
                     status: 'active',
                     visibility: visibility,
                     createdAt: serverTimestamp()
                 });
 
+                let extraMsg = '';
+
+                // 2. NẾU LÀ BÀI VOCAB -> TỰ ĐỘNG NHÂN BẢN THÊM 1 BÀI SANG WRITING
+                if (type === 'vocab') {
+                    // Bộ lọc thông minh: Bỏ qua các câu điền khuyết (___) vì Writing chỉ gõ từ đơn
+                    const writingQuestions = questions.filter(q => !q.word.includes('___'));
+                    
+                    if (writingQuestions.length > 0) {
+                        const roomCode2 = Math.floor(100000 + Math.random() * 900000).toString();
+                        await addDoc(collection(db, "exams"), {
+                            type: 'writing',
+                            title: title, // Cùng tên bài
+                            timeLimit: parseInt(timeLimit),
+                            roomCode: roomCode2,
+                            folderId: folderId,
+                            teacherId: currentUser.uid,
+                            teacherName: currentUser.displayName,
+                            questions: writingQuestions, // Dùng mảng từ vựng đã lọc
+                            passage: "",
+                            rawContent: rawContent,
+                            status: 'active',
+                            visibility: visibility,
+                            createdAt: serverTimestamp()
+                        });
+                        extraMsg = `<br><br><div style="background:#ECFDF5; border:1px solid #A7F3D0; padding:12px; border-radius:12px; margin-top:15px; font-size:14px; color:#047857;">✨ Hệ thống đã tự động nhân bản thêm 1 bài sang mục <b>✍️ Writing</b> với các từ vựng tương ứng!</div>`;
+                    }
+                }
+
+                // 3. HIỂN THỊ THÔNG BÁO THÀNH CÔNG
                 Swal.fire({ 
                     icon: 'success', 
-                    title: 'Tạo phòng thành công!', 
-                    html: `Đã lưu cấu trúc bài <b>${title}</b><br>Mã phòng luyện tập:<br><b style="color:#D97706; font-size: 28px; letter-spacing: 5px;">${roomCode}</b>` 
+                    title: 'Tạo bài thành công!', 
+                    html: `Đã lưu cấu trúc bài <b>${title}</b><br>Mã phòng gốc:<br><b style="color:#D97706; font-size: 28px; letter-spacing: 5px;">${roomCode1}</b>${extraMsg}` 
                 }).then(() => {
                     document.getElementById('englishTitle').value = '';
                     document.getElementById('englishContent').value = '';
@@ -1264,19 +1432,65 @@
                 });
             } catch (e) { Swal.fire('Lỗi', e.message, 'error'); }
         };
-        // Gắn danh sách thư mục vào thẻ select của Vocab khi load
-        const originalLoadFolders = window.loadFolders;
-        window.loadFolders = async function() {
-            await originalLoadFolders(); // Chạy code cũ
-            // Cập nhật thêm cho Thẻ Select Vocab
-            const selectVocab = document.getElementById('vocabFolder');
-            if(selectVocab) {
-                selectVocab.innerHTML = '<option value="">-- Chọn thư mục --</option>';
-                for (const [id, name] of Object.entries(userFolders)) {
-                    selectVocab.innerHTML += `<option value="${id}">${name}</option>`;
+
+
+        // lọc folder name
+
+        // HÀM LỌC BÀI THI TRONG TRANG ADMIN
+        // HÀM LỌC BÀI THI TRONG TRANG ADMIN (HỖ TRỢ DỮ LIỆU ĐỘNG)
+        window.filterAdminExams = function() {
+            const filterValue = document.getElementById('examFilter').value;
+            const examItems = document.querySelectorAll('.admin-exam-item');
+
+            examItems.forEach(item => {
+                const folder = item.getAttribute('data-folder');
+                
+                if (filterValue === 'all') {
+                    item.style.display = ''; // Chọn 'all' thì hiện tất cả
+                } else {
+                    // So sánh chính xác ID của bài thi với ID đang lọc
+                    // Chạy đúng cho cả 'english_zone' lẫn các Tag Lịch Sử, Địa Lý...
+                    if (folder === filterValue) item.style.display = '';
+                    else item.style.display = 'none';
                 }
-            }
+            });
         };
+
+
+        // ===============================================
+        // LOGIC CHO THẺ DROPDOWN PHÂN LOẠI CUSTOM
+        // ===============================================
+        window.toggleCustomDropdown = function(event) {
+            event.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
+            document.getElementById('filterDropdownWrapper').classList.toggle('active');
+        };
+
+        window.selectFilterOption = function(value, text, element) {
+            // 1. Cập nhật chữ hiển thị
+            document.getElementById('dropdownSelectedText').innerText = text;
+            
+            // 2. Gắn giá trị vào input ẩn (Để hàm filterAdminExams cũ có cái mà đọc)
+            document.getElementById('examFilter').value = value;
+            
+            // 3. Đổi màu mục đang chọn
+            const items = element.parentElement.querySelectorAll('.dropdown-item');
+            items.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            
+            // 4. Đóng thẻ thả xuống
+            document.getElementById('filterDropdownWrapper').classList.remove('active');
+            
+            // 5. Kích hoạt tính năng LỌC cũ
+            if (typeof filterAdminExams === 'function') filterAdminExams();
+        };
+
+        // Bấm ra ngoài màn hình thì tự động đóng thẻ Dropdown
+        document.addEventListener('click', function(event) {
+            const wrapper = document.getElementById('filterDropdownWrapper');
+            if (wrapper && !wrapper.contains(event.target)) {
+                wrapper.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
