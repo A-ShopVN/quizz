@@ -274,7 +274,18 @@
 .progress-50 { width: 50%; background: linear-gradient(90deg, #FCD34D, #F59E0B); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
 .progress-100 { width: 100%; background: linear-gradient(90deg, #34D399, #10B981); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
 
+
+       /* ========================================= */
+        /* CSS GAME GHÉP TỪ (COLLOCATION)            */
+        /* ========================================= */
+        .collo-word-btn { padding: 12px 24px; background: #FFFFFF; border: 2px solid #E2E8F0; border-radius: 16px; font-weight: 800; font-size: 16px; color: #1E293B; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); user-select: none; }
+        .collo-word-btn:hover { border-color: #0EA5E9; color: #0EA5E9; transform: translateY(-3px); box-shadow: 0 8px 15px rgba(14, 165, 233, 0.15); }
+        .collo-word-ans { padding: 12px 24px; background: #E0F2FE; border: 2px solid #BAE6FD; border-radius: 16px; font-weight: 800; font-size: 16px; color: #0369A1; cursor: pointer; transition: 0.2s; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); user-select: none; }
+        .collo-word-ans:hover { background: #BAE6FD; border-color: #7DD3FC; transform: translateY(-2px); }
+        .collo-area { min-height: 70px; border: 3px dashed #CBD5E1; border-radius: 20px; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; background: #F8FAFC; transition: 0.3s;}
         
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes shakeErr { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } } 
     </style>
 </head>
 <body>
@@ -493,6 +504,33 @@
         </div>
         <button onclick="showStep('step-english-list')" class="btn btn-outline" style="margin-top: 20px; border: none; box-shadow: none; background: transparent; color: #EA580C; font-weight: 700;">⬅ Thoát Luyện Tập</button>
     </div>
+    <div id="step-collo-play" class="glass-container exam-container" style="display: none; text-align: center;">
+        <div class="exam-header" style="background: #F0F9FF; border-color: #E0F2FE;">
+            <div id="colloTitleDisplay" style="font-weight: 800; color: #0284C7; font-size: 18px;">---</div>
+            <div class="timer-box" style="background: #E0F2FE; color: #0284C7;">
+                <span id="colloProgress">1/10</span>
+            </div>
+        </div>
+
+        <div class="fill-blank-container" style="display: block; border-color: #BAE6FD; box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1);">
+            <div style="font-size: 14px; color: #64748B; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px;">Sắp xếp thành cụm từ đúng</div>
+            
+            <div id="colloMeaningDisplay" style="font-size: 28px; color: #0284C7; font-weight: 900; margin-bottom: 25px;">Tận dụng</div>
+            
+            <div id="colloAnswerArea" class="collo-area" style="margin-bottom: 25px;"></div>
+            
+            <div id="colloWordBank" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 25px;"></div>
+
+            <button class="btn-check-ans" id="btnCheckCollo" onclick="checkColloAnswer()" style="background: #0EA5E9; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); width: 100%;">Kiểm tra cụm từ</button>
+            <div id="colloFeedback" style="font-size: 16px; margin-top: 15px; min-height: 24px;"></div>
+        </div>
+
+        <div class="fc-controls" style="margin-top: 20px;">
+            <button class="btn btn-outline" onclick="prevCollo()">⬅ Câu trước</button>
+            <button class="btn" id="btnNextCollo" style="background: linear-gradient(135deg, #0EA5E9, #0284C7);" onclick="nextCollo()">Câu tiếp theo ➡</button>
+        </div>
+        <button onclick="showStep('step-english-list')" class="btn btn-outline" style="margin-top: 20px; border: none; box-shadow: none; background: transparent; color: #0284C7; font-weight: 700;">⬅ Thoát Luyện Tập</button>
+    </div>
 
     <div id="step-review" class="glass-container exam-container">
         <div class="exam-header" style="justify-content: center; flex-direction: column;">
@@ -616,9 +654,9 @@
                 eSnap.forEach(doc => { 
                     const data = doc.data();
                     // BỘ LỌC QUAN TRỌNG: Ẩn các bài Tiếng Anh khỏi trang chủ để không bị lỗi trắng trang
-                    if (data.type !== 'vocab' && data.type !== 'reading' && data.type !== 'writing') {
-                        globalExams.push({ id: doc.id, ...data }); 
-                    }
+                if (data.type !== 'vocab' && data.type !== 'reading' && data.type !== 'writing' && data.type !== 'collocation') {
+                    globalExams.push({ id: doc.id, ...data }); 
+                }
                 });
                 globalExams.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
 
@@ -1314,15 +1352,22 @@
             // NẾU HỢP LỆ THÌ VÀO THI
             document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; });
 
-            // SỬA DÒNG NÀY: Cho phép collocation chạy chung luồng với vocab
-            if (skillType === 'vocab' || skillType === 'collocation') {
+            if (skillType === 'vocab') {
                 currentVocabSet = exam.questions; currentVocabIndex = 0;
                 document.getElementById('vocabTitleDisplay').innerText = exam.title;
                 updateFlashcardUI();
-                
                 const vocabPlay = document.getElementById('step-vocab-play');
                 vocabPlay.style.display = 'block'; setTimeout(() => { vocabPlay.style.opacity = '1'; }, 30);
             } 
+            // ============ THÊM ĐOẠN NÀY DÀNH RIÊNG CHO COLLOCATION ============
+            else if (skillType === 'collocation') {
+                window.currentColloSet = exam.questions; window.currentColloIndex = 0;
+                document.getElementById('colloTitleDisplay').innerText = exam.title;
+                updateColloUI();
+                const colloPlay = document.getElementById('step-collo-play');
+                colloPlay.style.display = 'block'; setTimeout(() => { colloPlay.style.opacity = '1'; }, 30);
+            }
+            // =================================================================
             else if (skillType === 'reading' || skillType === 'writing') {
                 document.getElementById('examTitleDisplay').innerText = exam.title;
                 showStep('step-info');
@@ -1639,6 +1684,136 @@
             if (currentVocabIndex > 0) {
                 currentVocabIndex--; 
                 updateFlashcardUI();
+            }
+        };
+
+
+        // ==========================================
+        // CÁC HÀM XỬ LÝ GAME GHÉP TỪ (COLLOCATION)
+        // ==========================================
+        window.updateColloUI = function() {
+            const currentData = window.currentColloSet[window.currentColloIndex];
+            document.getElementById('colloProgress').innerText = `${window.currentColloIndex + 1} / ${window.currentColloSet.length}`;
+            document.getElementById('colloMeaningDisplay').innerText = currentData.meaning; // Hiện nghĩa Tiếng Việt
+            
+            // Cắt cụm từ thành các mảng từ (loại bỏ dấu câu dính liền nếu có)
+            window.colloTargetWords = currentData.word.trim().split(/\s+/);
+            window.colloSelectedIndices = []; // Lưu lại các vị trí người dùng đã chọn
+            
+            // Gắn index gốc để lúc xáo trộn vẫn biết đâu là mảnh nào
+            let wordsObj = window.colloTargetWords.map((w, i) => ({ text: w, originalIndex: i }));
+            window.colloShuffled = shuffleArray(wordsObj); // Tận dụng hàm shuffleArray có sẵn của bạn
+
+            renderColloBank();
+            renderColloAnswer();
+            
+            document.getElementById('colloFeedback').innerHTML = '';
+            document.getElementById('colloAnswerArea').style.borderColor = '#CBD5E1';
+            document.getElementById('colloAnswerArea').style.backgroundColor = '#F8FAFC';
+            document.getElementById('btnCheckCollo').style.display = 'inline-block';
+            document.getElementById('btnNextCollo').style.opacity = '0.5';
+        };
+
+        window.renderColloBank = function() {
+            const bank = document.getElementById('colloWordBank');
+            bank.innerHTML = '';
+            window.colloShuffled.forEach((w, idx) => {
+                if (!window.colloSelectedIndices.includes(idx)) {
+                    // Nếu từ CHƯA bị chọn -> Hiện bình thường
+                    bank.innerHTML += `<div class="collo-word-btn" onclick="selectColloWord(${idx})">${w.text}</div>`;
+                } else {
+                    // Nếu từ ĐÃ bị chọn -> Hiện khung mờ giữ chỗ
+                    bank.innerHTML += `<div class="collo-word-btn" style="visibility:hidden; opacity: 0; padding: 0; margin: 0; width: 0;"></div>`;
+                }
+            });
+        };
+
+        window.renderColloAnswer = function() {
+            const ansArea = document.getElementById('colloAnswerArea');
+            ansArea.innerHTML = '';
+            window.colloSelectedIndices.forEach((bankIdx) => {
+                const wordText = window.colloShuffled[bankIdx].text;
+                // Click vào từ đã xếp thì nó văng ngược lại xuống bank
+                ansArea.innerHTML += `<div class="collo-word-ans" onclick="deselectColloWord(${bankIdx})">${wordText}</div>`;
+            });
+        };
+
+        window.selectColloWord = function(bankIdx) {
+            window.colloSelectedIndices.push(bankIdx); // Đẩy vào khung đáp án
+            renderColloBank();
+            renderColloAnswer();
+            document.getElementById('colloFeedback').innerHTML = '';
+        };
+
+        window.deselectColloWord = function(bankIdx) {
+            window.colloSelectedIndices = window.colloSelectedIndices.filter(id => id !== bankIdx); // Xóa khỏi đáp án
+            renderColloBank();
+            renderColloAnswer();
+            document.getElementById('colloFeedback').innerHTML = '';
+        };
+
+        window.checkColloAnswer = function() {
+            const feedback = document.getElementById('colloFeedback');
+            const ansArea = document.getElementById('colloAnswerArea');
+
+            // Kiểm tra xem đã xếp đủ số lượng từ chưa
+            if (window.colloSelectedIndices.length < window.colloTargetWords.length) {
+                feedback.innerHTML = '<span style="color:#F59E0B; font-weight:700;">⚠️ Bạn chưa xếp đủ các mảnh ghép!</span>';
+                return;
+            }
+
+            // Kiểm tra thứ tự các từ (không phân biệt hoa thường)
+            let isCorrect = true;
+            window.colloSelectedIndices.forEach((bankIdx, pos) => {
+                if (window.colloShuffled[bankIdx].text.toLowerCase() !== window.colloTargetWords[pos].toLowerCase()) {
+                    isCorrect = false;
+                }
+            });
+
+            if (isCorrect) {
+                ansArea.style.borderColor = '#10B981';
+                ansArea.style.backgroundColor = '#ECFDF5';
+                feedback.innerHTML = '<span style="color:#10B981; font-weight:800; font-size:18px;">🎉 Ghép cực chuẩn!</span>';
+                
+                // Nếu giáo viên có nhập câu ví dụ thì hiện ra cho học sinh xem
+                const currentData = window.currentColloSet[window.currentColloIndex];
+                if (currentData.example && currentData.example !== '') {
+                    feedback.innerHTML += `<div style="margin-top:12px; font-style:italic; color:#475569; font-weight: 500; font-size: 15px;">Ví dụ: "${currentData.example}"</div>`;
+                }
+
+                document.getElementById('btnCheckCollo').style.display = 'none';
+                document.getElementById('btnNextCollo').style.opacity = '1';
+                
+                // Khóa không cho gỡ mảnh ghép nữa
+                document.querySelectorAll('.collo-word-ans').forEach(el => el.onclick = null);
+
+            } else {
+                ansArea.style.borderColor = '#EF4444';
+                feedback.innerHTML = '<span style="color:#EF4444; font-weight:800;">❌ Thứ tự chưa đúng, hãy nhấp vào từ để gỡ ra ghép lại!</span>';
+                
+                // Hiệu ứng rung lắc báo lỗi
+                ansArea.style.animation = 'shakeErr 0.4s';
+                setTimeout(() => ansArea.style.animation = '', 400);
+            }
+        };
+
+        window.nextCollo = function() {
+            if (window.currentColloIndex < window.currentColloSet.length - 1) {
+                window.currentColloIndex++; 
+                updateColloUI();
+            } else {
+                saveEnglishProgress(); // Ghi nhận hoàn thành 1 lần
+                Swal.fire({icon: 'success', title: 'Hoàn thành!', text: 'Tuyệt vời, bạn đã ghép xong toàn bộ Cụm từ!', confirmButtonColor: '#0EA5E9'})
+                .then(() => { 
+                    openEnglishSkill('collocation', '🧩 Luyện Collocation'); 
+                });
+            }
+        };
+
+        window.prevCollo = function() {
+            if (window.currentColloIndex > 0) {
+                window.currentColloIndex--; 
+                updateColloUI();
             }
         };
     </script>
