@@ -255,6 +255,26 @@
 .btn-submit-exam:active {
     transform: translateY(0);
 }
+/* TỐI ƯU HÓA KHUNG CHO ICON / SVG / EMOJI */
+        #fcImage { 
+            width: 100%; height: 200px; 
+            object-fit: contain; /* Để Icon không bị cắt xén */
+            border-bottom: 2px solid #E2E8F0; 
+            display: none;
+            padding: 20px; /* Thêm khoảng trống cho icon dễ nhìn */
+            background: #F1F5F9; /* Màu nền xám nhạt làm nổi bật Icon */
+        }
+
+
+/* ========================================= */
+/* CSS THANH TIẾN ĐỘ BÀI HỌC NGOẠI NGỮ       */
+/* ========================================= */
+.progress-container { background: #E2E8F0; border-radius: 20px; height: 10px; width: 100%; overflow: hidden; position: relative; margin-top: 5px; }
+.progress-bar { height: 100%; border-radius: 20px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.progress-50 { width: 50%; background: linear-gradient(90deg, #FCD34D, #F59E0B); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+.progress-100 { width: 100%; background: linear-gradient(90deg, #34D399, #10B981); box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+
+        
     </style>
 </head>
 <body>
@@ -303,6 +323,16 @@
                             <div class="water-title">Reading</div>
                             <div class="water-desc">Chia đôi màn hình tối ưu</div>
                             <button class="water-btn" style="--clr:#be01fe; position: relative; z-index: 10;" onclick="openEnglishSkill('reading', '👁️‍🗨️ Luyện Đọc Hiểu')">Luyện Ngay</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="water-card">
+                        <div class="water-content">
+                            <div class="water-icon">🧩</div>
+                            <div class="water-title">Collocation</div>
+                            <div class="water-desc">Cụm từ & Phrasal Verbs</div>
+                            <button class="water-btn" style="--clr:#00d2ff; position: relative; z-index: 10;" onclick="openEnglishSkill('collocation', '🧩 Luyện Collocation')">Làm Chủ</button>
                         </div>
                     </div>
                 </div>
@@ -383,17 +413,24 @@
                 <span id="vocabProgress">1/10</span>
             </div>
         </div>
-
+        
         <div class="flashcard-container" id="flashcardBox" onclick="this.classList.toggle('is-flipped')">
             <div class="flashcard-inner">
                 <div class="flashcard-front">
+                    <img id="fcImage" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 4px solid white;">
+                    
                     <div class="fc-word" id="fcWordEn">Apple</div>
                     <div class="fc-hint">Chạm để lật thẻ</div>
                 </div>
                 <div class="flashcard-back">
-                    <div class="fc-word" id="fcWordVn">Quả táo</div>
-                    <div class="fc-hint">Nghĩa tiếng Việt</div>
+                <div class="fc-text-area">
+                    <div class="fc-word-vn" id="fcWordVn">Đại dương</div>
+                    
+                    <div id="fcExample" style="font-size: 16px; color: #475569; font-style: italic; margin-top: 12px; font-weight: 500; padding: 0 15px; line-height: 1.5;"></div>
+                    
+                    <div class="fc-hint" style="margin-top: 20px;">Chạm để xem lại từ tiếng Anh</div>
                 </div>
+            </div>
             </div>
         </div>
 
@@ -410,9 +447,16 @@
         <button onclick="showStep('step-room')" class="btn btn-outline" style="margin-top: 20px; border: none; box-shadow: none; background: transparent;">Thoát học tập</button>
     </div>
     <div id="step-reading-play" class="glass-container exam-container" style="display: none; max-width: 1100px; padding: 25px;">
-        <div class="exam-header" style="background: #FAF5FF; border-color: #E9D5FF;">
+        <div class="exam-header" style="background: #FAF5FF; border-color: #E9D5FF; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div id="readingTitleDisplay" style="font-weight: 800; color: #6B21A8; font-size: 18px;">---</div>
-            <button onclick="submitReading()" class="btn-submit-exam" style="margin:0; padding: 10px 25px; font-size: 15px; width: auto; background: linear-gradient(135deg, #9333EA 0%, #7E22CE 100%); box-shadow: 0 10px 20px -10px rgba(147, 51, 234, 0.5);">Nộp Bài Ngay</button>
+            
+            <div class="timer-box" style="background: #F3E8FF; color: #9333EA; font-size: 18px; padding: 6px 16px;">
+                ⏱ <span id="readingTimerDisplay">00:00</span>
+            </div>
+
+            <button onclick="submitReading()" class="btn-submit-exam" style="margin:0;">
+                <span>🚀 Nộp Bài Ngay</span>
+            </button>
         </div>
         
         <div class="layout-pdf" style="height: 65vh; margin-top: 15px;">
@@ -423,19 +467,14 @@
             <div class="virtual-sheet" style="padding: 20px; overflow-y: auto; background: #F8FAFC; border: 2px solid #E2E8F0;" id="readingQuestionsContainer">
                 </div>
         </div>
-        <button onclick="showStep('step-english-list')" class="btn btn-outline" style="margin-top: 20px; border: none; color: #6B21A8;">⬅ Thoát Luyện Tập</button>
+        <button onclick="showStep('step-english-list')" class="btn btn-outline" style="margin-top: 20px; border: none; color: #6B21A8; font-weight: 700;">⬅ Thoát Luyện Tập</button>
     </div>
     <div id="step-writing-play" class="glass-container exam-container" style="display: none; text-align: center;">
-        <div class="exam-header" style="background: #FAF5FF; border-color: #E9D5FF; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-            <div id="readingTitleDisplay" style="font-weight: 800; color: #6B21A8; font-size: 18px;">---</div>
-            
-            <div class="timer-box" style="background: #F3E8FF; color: #9333EA; font-size: 18px; padding: 6px 16px;">
-                ⏱ <span id="readingTimerDisplay">00:00</span>
+        <div class="exam-header" style="background: #FFF7ED; border-color: #FFEDD5;">
+            <div id="writingTitleDisplay" style="font-weight: 800; color: #EA580C; font-size: 18px;">---</div>
+            <div class="timer-box" style="background: #FFEDD5; color: #EA580C;">
+                <span id="writingProgress">1/10</span>
             </div>
-
-            <button onclick="submitReading()" class="btn-submit-reading" style="margin:0;">
-                <span>🚀 Nộp Bài Ngay</span>
-            </button>
         </div>
 
         <div class="fill-blank-container" id="writingBox" style="display: block;">
@@ -750,61 +789,61 @@
                 const userCred = await signInAnonymously(auth);
                 currentStudent = { uid: userCred.user.uid, name: name, class: sClass };
 
+                // ===============================================
+                // PHÂN LUỒNG: NẾU ĐÂY LÀ ĐỀ NGOẠI NGỮ (READING / WRITING / VOCAB)
+                // ===============================================
+                if (currentExam.type === 'reading') {
+                    document.getElementById('readingTitleDisplay').innerText = currentExam.title;
+                    document.getElementById('readingPassageContent').innerHTML = currentExam.passage || "<i>Không có đoạn văn liệu</i>";
+                    
+                    const qContainer = document.getElementById('readingQuestionsContainer');
+                    qContainer.innerHTML = '';
+                    
+                    window.currentReadingQuestions = currentExam.questions;
+                    window.readingDraft = {};
+                    
+                    currentExam.questions.forEach((q, idx) => {
+                        let html = `<div class="question-card" style="padding: 20px; margin-bottom: 15px; border-radius: 16px;"><div class="question-text" style="font-size:15px; margin-bottom:15px;">Câu ${idx + 1}: ${q.question}</div><div class="options">`;
+                        ['A', 'B', 'C', 'D'].forEach(opt => {
+                            html += `<label class="option-label" style="padding:10px 15px; font-size:14px; border-radius: 12px;"><input type="radio" name="rq_${idx}" value="${opt}" onchange="readingDraft['q_${idx}'] = '${opt}'"> ${opt}. ${q.options[opt]}</label>`;
+                        });
+                        html += `</div></div>`;
+                        qContainer.innerHTML += html;
+                    });
+                    
+                    showStep('step-reading-play');
+                    Swal.close();
+                    isExamActive = true; 
+                    if (typeof startReadingTimer === "function") startReadingTimer(currentExam.timeLimit);
+                    return; // Ngắt, không chạy luồng đề trắc nghiệm cũ
+                }
+                
+                if (currentExam.type === 'writing') {
+                    window.currentWritingSet = currentExam.questions;
+                    window.currentWritingIndex = 0;
+                    document.getElementById('writingTitleDisplay').innerText = currentExam.title;
+                    updateWritingUI();
+                    
+                    showStep('step-writing-play');
+                    Swal.close();
+                    return; // Ngắt
+                }
+
+                if (currentExam.type === 'vocab') {
+                    currentVocabSet = currentExam.questions;
+                    currentVocabIndex = 0;
+                    document.getElementById('vocabTitleDisplay').innerText = currentExam.title;
+                    updateFlashcardUI();
+                    
+                    showStep('step-vocab-play');
+                    Swal.close();
+                    return; // Ngắt
+                }
+                // ===============================================
+
+                // NẾU LÀ ĐỀ THI THƯỜNG (TEXT/PDF) THÌ CHẠY TIẾP XUỐNG ĐÂY
                 shuffledQuestions = prepareShuffledExam(currentExam.questions, currentExam.type);
                 cheatWarnings = 0;
-                // ===============================================
-            // PHÂN LUỒNG: NẾU ĐÂY LÀ ĐỀ NGOẠI NGỮ (READING / WRITING / VOCAB)
-            // ===============================================
-            if (currentExam.type === 'reading') {
-                document.getElementById('readingTitleDisplay').innerText = currentExam.title;
-                document.getElementById('readingPassageContent').innerHTML = currentExam.passage || "<i>Không có đoạn văn liệu</i>";
-                
-                const qContainer = document.getElementById('readingQuestionsContainer');
-                qContainer.innerHTML = '';
-                
-                window.currentReadingQuestions = currentExam.questions;
-                window.readingDraft = {};
-                
-                currentExam.questions.forEach((q, idx) => {
-                    let html = `<div class="question-card" style="padding: 20px; margin-bottom: 15px; border-radius: 16px;"><div class="question-text" style="font-size:15px; margin-bottom:15px;">Câu ${idx + 1}: ${q.question}</div><div class="options">`;
-                    ['A', 'B', 'C', 'D'].forEach(opt => {
-                        html += `<label class="option-label" style="padding:10px 15px; font-size:14px; border-radius: 12px;"><input type="radio" name="rq_${idx}" value="${opt}" onchange="readingDraft['q_${idx}'] = '${opt}'"> ${opt}. ${q.options[opt]}</label>`;
-                    });
-                    html += `</div></div>`;
-                    qContainer.innerHTML += html;
-                });
-                
-                showStep('step-reading-play');
-                Swal.close();
-                isExamActive = true; 
-                startReadingTimer(currentExam.timeLimit); // Khởi động đồng hồ
-                return; // Ngắt, không chạy luồng đề trắc nghiệm cũ
-            }
-            
-            if (currentExam.type === 'writing') {
-                window.currentWritingSet = currentExam.questions;
-                window.currentWritingIndex = 0;
-                document.getElementById('writingTitleDisplay').innerText = currentExam.title;
-                updateWritingUI();
-                
-                showStep('step-writing-play');
-                Swal.close();
-                return; // Ngắt
-            }
-
-            if (currentExam.type === 'vocab') {
-                currentVocabSet = currentExam.questions;
-                currentVocabIndex = 0;
-                document.getElementById('vocabTitleDisplay').innerText = currentExam.title;
-                updateFlashcardUI();
-                
-                showStep('step-vocab-play');
-                Swal.close();
-                return; // Ngắt
-            }
-            // ===============================================
-            
-            // (Phần code cũ bên dưới giữ nguyên: shuffledQuestions = prepareShuffledExam...)
 
                 const endTime = Date.now() + currentExam.timeLimit * 60 * 1000;
                 localStorage.setItem('exam_active_session', JSON.stringify({
@@ -816,7 +855,6 @@
                 renderQuestions(); showStep('step-exam'); Swal.close(); isExamActive = true; startTimer(currentExam.timeLimit);
             } catch (error) { Swal.fire('Lỗi hệ thống', error.message, 'error'); }
         });
-
         document.addEventListener("visibilitychange", () => {
             if (document.hidden && isExamActive) {
                 cheatWarnings++;
@@ -1145,7 +1183,7 @@
         // --- KẾT THÚC HÀM TÌM KIẾM & LỌC ---
 
         document.getElementById('btnBackToResult').addEventListener('click', () => { showStep('step-result'); });
-        
+        // Chống click chuột phải và F12 để hạn chế học sinh xem mã nguồn (Không hiệu quả 100% nhưng có thể giảm bớt hành vi gian lận)
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false; };
         // =============================================== new ===============================================
@@ -1169,10 +1207,13 @@
         let currentVocabIndex = 0;
 
         // 2. Mở danh sách các bài tập Tiếng Anh khi bấm vào Giọt Nước
+        // Hàm hỗ trợ: Lấy ngày hiện tại (để sang ngày mới tự reset tiến độ)
+        function getTodayString() { return new Date().toLocaleDateString('vi-VN'); }
+
+        // 2. Mở danh sách bài tập Tiếng Anh kèm Thanh Tiến Độ
         window.openEnglishSkill = async function(skillType, title) {
             Swal.fire({ title: 'Đang tải dữ liệu...', didOpen: () => Swal.showLoading() });
             try {
-                // Truy vấn Firebase để lấy bài đúng chuyên mục (vocab, reading, writing)
                 const q = query(collection(db, "exams"), where("type", "==", skillType), where("status", "==", "active"), where("visibility", "==", "public"));
                 const snap = await getDocs(q);
                 
@@ -1186,19 +1227,53 @@
                     window.tempEnglishExams = [];
                     snap.forEach(doc => window.tempEnglishExams.push({id: doc.id, ...doc.data()}));
 
+                    // Đọc tiến độ học tập từ thiết bị
+                    let progressData = JSON.parse(localStorage.getItem('english_progress') || '{}');
+                    let today = getTodayString();
+
                     window.tempEnglishExams.forEach((ex, idx) => {
-                        let icon = skillType === 'vocab' ? '📚' : (skillType === 'reading' ? '👁️‍🗨️' : '✍️');
+                        let icon = skillType === 'vocab' ? '📚' : (skillType === 'reading' ? '👁️‍🗨️' : (skillType === 'writing' ? '✍️' : '🧩'));
+                        
+                        // Lấy data tiến độ của bài này
+                        let lessonProg = progressData[ex.id] || { attempts: 0, lastCompleted: 0, date: today };
+                        // Nếu qua ngày mới -> Reset lại 0
+                        if (lessonProg.date !== today) lessonProg = { attempts: 0, lastCompleted: 0, date: today };
+
+                        let statusText = 'Mục tiêu: 2 lần/ngày';
+                        let barClass = '';
+                        let lockStyle = '';
+
+                        if (lessonProg.attempts >= 2) {
+                            statusText = '✅ Đã đủ chỉ tiêu (Học tự do)';
+                            barClass = 'progress-100';
+                        } else if (lessonProg.attempts === 1) {
+                            let timePassed = Date.now() - lessonProg.lastCompleted;
+                            if (timePassed < 15 * 60 * 1000) {
+                                statusText = '⏳ Đang khóa nghỉ ngơi 15p...';
+                                lockStyle = 'opacity: 0.7;'; // Làm mờ thẻ bài
+                            } else {
+                                statusText = '🔥 Đã mở khóa Lần 2!';
+                            }
+                            barClass = 'progress-50';
+                        }
+
                         listContainer.innerHTML += `
-                            <div class="exam-card-large" style="margin-bottom: 15px; cursor: pointer; border-left: 4px solid #F59E0B; background: #FFFBEB;" onclick="startEnglishSession('${skillType}', ${idx})">
+                            <div class="exam-card-large" style="margin-bottom: 15px; cursor: pointer; border-left: 4px solid #F59E0B; background: #FFFBEB; ${lockStyle}" onclick="startEnglishSession('${skillType}', ${idx})">
                                 <h3 style="color: #D97706; margin-bottom: 5px;">${icon} ${ex.title}</h3>
-                                <div style="font-size: 14px; color: #B45309; font-weight: 600;">Số lượng: ${ex.questions ? ex.questions.length : 0} mục</div>
+                                <div style="font-size: 14px; color: #B45309; font-weight: 600; margin-bottom: 10px;">Số lượng: ${ex.questions ? ex.questions.length : 0} mục</div>
+                                
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #B45309; font-weight: 700; margin-bottom: 4px;">
+                                    <span>${statusText}</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar ${barClass}" style="width: ${lessonProg.attempts >= 2 ? '100%' : (lessonProg.attempts == 1 ? '50%' : '0%')};"></div>
+                                </div>
                             </div>
                         `;
                     });
                 }
                 
                 Swal.close();
-                // Ẩn tất cả và mở bảng danh sách Tiếng Anh
                 document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; el.style.opacity = '0'; });
                 const target = document.getElementById('step-english-list');
                 target.style.display = 'block';
@@ -1207,30 +1282,71 @@
             } catch (e) { Swal.fire('Lỗi', e.message, 'error'); }
         };
 
-        // 3. Xử lý khi học sinh click vào bài tập
-        // 3. Xử lý khi học sinh click vào bài tập (Từ danh sách)
+        // 3. Xử lý logic Click (Khóa hoặc Cho phép học)
         window.startEnglishSession = function(skillType, index) {
             const exam = window.tempEnglishExams[index];
+            currentExam = exam; // Gán ID để lát hoàn thành còn lưu tiến độ
+            
+            // KIỂM TRA ĐẾM NGƯỢC 15 PHÚT
+            let progressData = JSON.parse(localStorage.getItem('english_progress') || '{}');
+            let today = getTodayString();
+            let lessonProg = progressData[exam.id] || { attempts: 0, lastCompleted: 0, date: today };
+            
+            if (lessonProg.date === today && lessonProg.attempts === 1) {
+                let timePassed = Date.now() - lessonProg.lastCompleted;
+                let timeNeeded = 15 * 60 * 1000; // 15 phút
+                
+                if (timePassed < timeNeeded) {
+                    let remaining = timeNeeded - timePassed;
+                    let min = Math.floor(remaining / 60000);
+                    let sec = Math.floor((remaining % 60000) / 1000);
+                    
+                    return Swal.fire({
+                        icon: 'info',
+                        title: '⏳ Bài học đang khóa!',
+                        html: `Não bộ cần nghỉ ngơi để thẩm thấu từ vựng.<br>Vui lòng quay lại sau:<br><br><b style="font-size:32px; color:#EF4444; letter-spacing: 2px;">${min < 10 ? '0'+min : min}:${sec < 10 ? '0'+sec : sec}</b>`,
+                        confirmButtonText: 'Đã hiểu',
+                        confirmButtonColor: '#4F46E5'
+                    });
+                }
+            }
+
+            // NẾU HỢP LỆ THÌ VÀO THI
             document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; });
 
-            if (skillType === 'vocab') {
-                // Từ vựng chỉ lật thẻ học chơi, không chấm điểm -> Vào thẳng
-                currentVocabSet = exam.questions;
-                currentVocabIndex = 0;
+            // SỬA DÒNG NÀY: Cho phép collocation chạy chung luồng với vocab
+            if (skillType === 'vocab' || skillType === 'collocation') {
+                currentVocabSet = exam.questions; currentVocabIndex = 0;
                 document.getElementById('vocabTitleDisplay').innerText = exam.title;
                 updateFlashcardUI();
                 
                 const vocabPlay = document.getElementById('step-vocab-play');
-                vocabPlay.style.display = 'block';
-                setTimeout(() => { vocabPlay.style.opacity = '1'; }, 30);
+                vocabPlay.style.display = 'block'; setTimeout(() => { vocabPlay.style.opacity = '1'; }, 30);
             } 
             else if (skillType === 'reading' || skillType === 'writing') {
-                // Reading và Writing cần lưu điểm/danh tính -> Chuyển sang form nhập Tên
-                currentExam = exam; 
                 document.getElementById('examTitleDisplay').innerText = exam.title;
                 showStep('step-info');
             }
         };
+
+        // Hàm hỗ trợ lưu tiến độ khi học xong
+        window.saveEnglishProgress = function() {
+            if (!currentExam) return;
+            let progressData = JSON.parse(localStorage.getItem('english_progress') || '{}');
+            let today = getTodayString();
+            let lessonProg = progressData[currentExam.id] || { attempts: 0, lastCompleted: 0, date: today };
+            
+            if (lessonProg.date !== today) {
+                lessonProg.attempts = 1; // Học lần đầu trong ngày mới
+            } else {
+                lessonProg.attempts += 1; // Tăng số lần
+            }
+            
+            lessonProg.lastCompleted = Date.now();
+            lessonProg.date = today;
+            progressData[currentExam.id] = lessonProg;
+            localStorage.setItem('english_progress', JSON.stringify(progressData));
+        }
         // ==========================================
         // CÁC HÀM XỬ LÝ RIÊNG CHO LUYỆN VIẾT TỪ VỰNG
         // ==========================================
@@ -1286,11 +1402,13 @@
                 window.currentWritingIndex++; 
                 updateWritingUI();
             } else {
+                saveEnglishProgress(); // <--- GỌI HÀM LƯU TIẾN ĐỘ
                 Swal.fire({icon: 'success', title: 'Hoàn thành!', text: 'Bạn đã hoàn thành bài luyện viết!', confirmButtonColor: '#EA580C'})
-                .then(() => { showStep('step-english-list'); });
+                .then(() => { 
+                    openEnglishSkill('writing', '✍️ Luyện Viết Câu'); 
+                });
             }
         };
-
         window.prevWriting = function() {
             if (window.currentWritingIndex > 0) {
                 window.currentWritingIndex--; 
@@ -1388,6 +1506,7 @@
         };
         // 4. Các hàm điều khiển Flashcard
         // 4. Các hàm điều khiển Hiển thị & Chấm điểm tức thì
+        // 4. Các hàm điều khiển Hiển thị & Chấm điểm tức thì
         window.updateFlashcardUI = function() {
             const currentData = currentVocabSet[currentVocabIndex];
             const fcBox = document.getElementById('flashcardBox');
@@ -1397,22 +1516,32 @@
             document.getElementById('vocabProgress').innerText = `${currentVocabIndex + 1} / ${currentVocabSet.length}`;
 
             // NẾU CÂU CÓ CHỨA 3 DẤU GẠCH DƯỚI -> CHẾ ĐỘ ĐIỀN KHUYẾT
+            // NẾU CÂU CÓ CHỨA 3 DẤU GẠCH DƯỚI -> CHẾ ĐỘ ĐIỀN KHUYẾT
             if (currentData.word.includes('___')) {
                 fcBox.style.display = 'none';
                 fbBox.style.display = 'block';
                 
-                // Thay thế ___ bằng ô input
-                const sentenceHtml = currentData.word.replace('___', '<input type="text" class="fb-input" id="fbInputAnswer" autocomplete="off" onkeypress="if(event.key === \'Enter\') checkBlankAnswer()">');
-                document.getElementById('fbSentenceDisplay').innerHTML = sentenceHtml;
+                let rawSentence = currentData.word.trim();
+                let hintHtml = '';
                 
-                // Reset trạng thái
+                // TÌM VÀ BÓC TÁCH PHẦN GỢI Ý TRONG NGOẶC ĐƠN Ở CUỐI CÂU
+                const hintMatch = rawSentence.match(/\(([^)]+)\)\s*$/);
+                if (hintMatch) {
+                    const hintText = hintMatch[1]; // Lấy chữ bên trong ngoặc
+                    rawSentence = rawSentence.replace(hintMatch[0], '').trim(); // Cắt bỏ ngoặc ra khỏi câu chính
+                    
+                    // Tạo khung hiển thị gợi ý cực đẹp
+                    hintHtml = `<div style="font-size: 15px; color: #64748B; font-weight: 500; margin-top: 20px; font-style: italic; background: #F8FAFC; padding: 10px 20px; border-radius: 12px; border: 1px dashed #CBD5E1; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">💡 Gợi ý: ${hintText}</div>`;
+                }
+                
+                const sentenceHtml = rawSentence.replace('___', '<input type="text" class="fb-input" id="fbInputAnswer" autocomplete="off" onkeypress="if(event.key === \'Enter\') checkBlankAnswer()">');
+                
+                // Gắn câu chính và câu gợi ý (nếu có) lên màn hình
+                document.getElementById('fbSentenceDisplay').innerHTML = sentenceHtml + '<br>' + hintHtml;
+                
                 document.getElementById('fbFeedback').innerText = '';
                 document.getElementById('btnCheckBlank').style.display = 'inline-block';
-                
-                // Khóa nút Next cho đến khi làm đúng (tùy chọn, ở đây tạm thời mở nhưng đổi màu mờ)
                 btnNext.style.opacity = '0.5'; 
-                
-                // Tự động focus vào ô nhập
                 setTimeout(() => { document.getElementById('fbInputAnswer').focus(); }, 100);
 
             } 
@@ -1425,9 +1554,40 @@
                 fcBox.classList.remove('is-flipped'); 
                 document.getElementById('fcWordEn').innerText = currentData.word;
                 document.getElementById('fcWordVn').innerText = currentData.meaning;
+                // HIỂN THỊ CÂU VÍ DỤ NẾU CÓ
+                const exEl = document.getElementById('fcExample');
+                if (currentData.example && currentData.example !== '') {
+                    exEl.innerHTML = `"${currentData.example}"`;
+                    exEl.style.display = 'block';
+                } else {
+                    exEl.style.display = 'none'; // Giấu đi nếu GV không nhập ví dụ
+                }
+                
+                // XỬ LÝ ẢNH THÔNG MINH (THỦ CÔNG HOẶC TỰ ĐỘNG)
+                // XỬ LÝ ẢNH THÔNG MINH (THỦ CÔNG HOẶC TỰ ĐỘNG)
+                // XỬ LÝ ẢNH THÔNG MINH: DÙNG ICON / SVG / EMOJI
+                const imgEl = document.getElementById('fcImage');
+                imgEl.style.display = 'block'; 
+                imgEl.style.background = '#F1F5F9'; // Tắt hiệu ứng loading xoay xoay
+                
+                imgEl.onerror = function() { this.style.display = 'none'; };
+
+                if (currentData.image) {
+                    if (currentData.image.startsWith('http')) {
+                        // 1. Nếu GV dán link ảnh/icon thật
+                        imgEl.src = currentData.image; 
+                    } else {
+                        // 2. Nếu GV nhập Emoji (vd: 🍎, 🦖) -> Biến thành SVG Icon siêu to
+                        const emoji = currentData.image.trim();
+                        imgEl.src = `data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="80">${emoji}</text></svg>`;
+                    }
+                } else {
+                    // 3. TỰ ĐỘNG: Tạo Icon SVG từ chữ cái đầu tiên (Giống avatar Gmail)
+                    let firstLetter = currentData.word.charAt(0).toUpperCase();
+                    imgEl.src = `https://ui-avatars.com/api/?name=${firstLetter}&background=random&color=fff&size=256&bold=true&format=svg`;
+                }
             }
         };
-
         window.checkBlankAnswer = function() {
             const currentData = currentVocabSet[currentVocabIndex];
             const inputEl = document.getElementById('fbInputAnswer');
@@ -1463,16 +1623,18 @@
                 currentVocabIndex++; 
                 updateFlashcardUI();
             } else {
-                Swal.fire({icon: 'success', title: 'Hoàn thành!', text: 'Tuyệt vời, bạn đã học xong bộ từ vựng & bài tập này!', confirmButtonColor: '#F59E0B'})
+                saveEnglishProgress(); // <--- GỌI HÀM LƯU TIẾN ĐỘ
+                Swal.fire({icon: 'success', title: 'Hoàn thành!', text: 'Tuyệt vời, bạn đã học xong bộ từ vựng này!', confirmButtonColor: '#F59E0B'})
                 .then(() => { 
                     document.querySelectorAll('.glass-container').forEach(el => { el.style.display = 'none'; });
                     const target = document.getElementById('step-english-list');
                     target.style.display = 'block';
                     setTimeout(() => { target.style.opacity = '1'; }, 30);
+                    // Mở lại skill Vocab để load lại thanh tiến độ mới
+                    openEnglishSkill('vocab', '📚 Luyện Từ Vựng'); 
                 });
             }
         };
-
         window.prevFlashcard = function() {
             if (currentVocabIndex > 0) {
                 currentVocabIndex--; 
