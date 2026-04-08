@@ -14,7 +14,7 @@
         /* ========================================= */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -83,7 +83,7 @@
         /* ========================================= */
         /* TRANG CHỦ & FOLDERS                       */
         /* ========================================= */
-        .code-section { background: #FFFFFF; padding: 40px; border-radius: 32px; border: 1px solid #E2E8F0; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .code-section { background: #FFFFFF; padding: 40px; border-radius: 32px; border: 1px solid #E2E8F0; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); margin-bottom: 40px; user-select: none;}
         
         .list-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; text-align: left; }
         .list-section-header h2 { margin: 0; font-size: 24px; }
@@ -286,6 +286,188 @@
         
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes shakeErr { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } } 
+
+
+
+        /* ========================================= */
+        /* CSS HỆ THỐNG GIÁO VIÊN (LIQUID GLASS iOS) */
+        /* ========================================= */
+        .teachers-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); 
+            gap: 24px; 
+            margin-bottom: 40px; 
+        }
+
+        /* THIẾT KẾ KÍNH LỎNG (LIQUID GLASS) */
+        .teacher-card { 
+            background: rgba(255, 255, 255, 0.35); /* Rất trong suốt */
+            backdrop-filter: blur(30px) saturate(200%); /* Blur cực mạnh + Tăng độ bão hòa màu nền */
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.6); /* Viền kính siêu mỏng */
+            border-radius: 32px; /* Bo góc tròn trịa hơn kiểu iOS */
+            padding: 30px 15px 25px; 
+            text-align: center; 
+            cursor: pointer; 
+            /* Transition lướt mượt, không nảy gắt */
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            box-shadow: 0 10px 30px -10px rgba(31, 38, 135, 0.05), inset 0 1px 1px 0 rgba(255,255,255,0.8); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Vệt sáng lướt qua mặt kính cực nhẹ */
+        .teacher-card::before {
+            content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg); transition: 0.7s ease; z-index: 0; pointer-events: none;
+        }
+
+        /* HOVER: BAY LÊN NHẸ NHÀNG, KHÔNG LÀM QUÁ */
+        .teacher-card:hover { 
+            transform: translateY(-6px) scale(1.01); /* Nhấc lên rất nhẹ */
+            box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.12), inset 0 1px 2px 0 rgba(255, 255, 255, 1); 
+            background: rgba(255, 255, 255, 0.5); /* Kính đục hơn một chút khi hover */
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+        .teacher-card:hover::before { left: 150%; } /* Kích hoạt vệt sáng */
+
+        /* AVATAR TRONG TRẺO */
+        .teacher-avatar-img { 
+            width: 80px; height: 80px; border-radius: 50%; object-fit: cover; 
+            margin-bottom: 16px; 
+            background: rgba(255, 255, 255, 0.4);
+            padding: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            box-shadow: 0 8px 20px -5px rgba(0,0,0,0.08);
+            position: relative; z-index: 2;
+        }
+
+        .teacher-card:hover .teacher-avatar-img { 
+            transform: scale(1.06); /* Phóng to rất nhẹ, không xoay */
+            box-shadow: 0 12px 25px -5px rgba(99, 102, 241, 0.2);
+            background: #FFFFFF;
+        }
+
+        .teacher-name-txt { 
+            font-size: 16px; font-weight: 700; color: #1E293B; margin-bottom: 12px; 
+            width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            transition: all 0.4s ease; letter-spacing: -0.2px;
+            position: relative; z-index: 2;
+        }
+        .teacher-card:hover .teacher-name-txt { color: #4F46E5; }
+
+        /* BADGE KÍNH MỜ XUYÊN THẤU */
+        .teacher-badge-txt { 
+            font-size: 12.5px; 
+            background: rgba(99, 102, 241, 0.08); /* Nền kính mờ nhạt */
+            backdrop-filter: blur(10px);
+            color: #4F46E5; padding: 6px 16px; border-radius: 20px; font-weight: 700;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            position: relative; z-index: 2;
+        }
+
+        .teacher-card:hover .teacher-badge-txt {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.15);
+        }
+        /* CSS POPUP GIÁO VIÊN NẰM NGOÀI CÙNG */
+        /* ========================================= */
+        /* CSS POPUP GIÁO VIÊN (LIQUID GLASS iOS)    */
+        /* ========================================= */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(15, 23, 42, 0.25); /* Nền tối mờ nhẹ nhàng hơn */
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            display: none; justify-content: center; align-items: center; z-index: 99999; 
+            opacity: 0; transition: opacity 0.4s ease; padding: 20px; 
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        
+        .modal-content { 
+            background: rgba(255, 255, 255, 0.65); /* Nền trắng trong suốt */
+            backdrop-filter: blur(40px) saturate(200%); /* Blur cực mạnh, tăng màu nền */
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            width: 100%; max-width: 520px; max-height: 85vh; 
+            border-radius: 36px; /* Bo góc cực tròn chuẩn iOS */
+            padding: 40px 35px; overflow-y: auto; position: relative; 
+            
+            /* Hoạt họa trượt mượt mà */
+            transform: translateY(40px) scale(0.95); 
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            
+            /* Đổ bóng sâu + Viền ánh sáng mỏng bên trong mặt kính */
+            box-shadow: 0 30px 60px -15px rgba(31, 38, 135, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
+        
+        /* Nút tắt Popup bằng kính */
+        .btn-close-modal { 
+            position: absolute; top: 20px; right: 20px; 
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            width: 36px; height: 36px; border-radius: 50%; font-size: 16px; font-weight: bold; 
+            cursor: pointer; color: #64748B; transition: all 0.3s ease; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .btn-close-modal:hover { 
+            background: rgba(239, 68, 68, 0.85); color: white; 
+            transform: rotate(90deg) scale(1.1); 
+            border-color: transparent;
+        }
+        
+        .tm-header { 
+            display: flex; align-items: center; gap: 20px; margin-bottom: 25px; 
+            border-bottom: 1px solid rgba(226, 232, 240, 0.4); 
+            padding-bottom: 20px; text-align: left;
+        }
+        .tm-avatar { 
+            width: 90px; height: 90px; border-radius: 50%; 
+            border: 3px solid rgba(255, 255, 255, 0.8); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            object-fit: cover; background: rgba(255,255,255,0.5);
+        }
+        .tm-name { font-size: 24px; color: #1E293B; margin-bottom: 6px; font-weight: 800; letter-spacing: -0.5px;}
+        
+        /* Chức danh dạng kính tím */
+        .tm-title { 
+            font-size: 13px; color: #4F46E5; font-weight: 700; 
+            background: rgba(99, 102, 241, 0.08); 
+            padding: 6px 14px; border-radius: 12px; display: inline-block; 
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+        
+        .tm-section { margin-bottom: 25px; text-align: left; }
+        .tm-section-title { font-size: 15px; color: #1E293B; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;}
+        .tm-text { font-size: 14.5px; color: #475569; line-height: 1.7; font-weight: 500; }
+        
+        .tm-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+        
+        /* Thẻ Tag chuyên ngành dạng kính nổi */
+        .tm-tag { 
+            font-size: 13px; 
+            background: rgba(255, 255, 255, 0.5); 
+            color: #475569; padding: 8px 16px; border-radius: 20px; 
+            font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: 0.3s ease;
+        }
+        .tm-tag:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            color: #4F46E5;
+        }
     </style>
 </head>
 <body>
@@ -363,20 +545,112 @@
 
         <div class="list-section">
             <div class="list-section-header">
-                <h2>📁 Danh Mục Bài Thi</h2>
+                <h2>👨‍🏫 Lớp Học Theo Giáo Viên</h2>
                 <button class="btn-outline" style="padding: 8px 16px; width: auto; font-size: 13px; border-radius: 12px; margin:0;" onclick="fetchData()" title="Làm mới">🔄 Làm mới</button>
             </div>
             
-            <div id="foldersContainer">
-                <p style="text-align: center; color: #94A3B8; font-weight: 500;">Đang tải danh sách...</p>
+            <div id="teachersGridContainer" class="teachers-grid">
+                <p style="text-align: center; color: #94A3B8; font-weight: 500; grid-column: 1 / -1;">Đang tải danh sách giáo viên...</p>
             </div>
         </div>
+    </div> <div class="modal-overlay" id="teacherModal">
+        <div class="modal-content">
+            <button class="btn-close-modal" onclick="closeTeacherModal()">✕</button>
+            <div class="tm-header">
+                <img id="tmAvatar" src="" class="tm-avatar" alt="Giáo viên">
+                <div style="flex: 1;">
+                    <h2 id="tmName" class="tm-name">---</h2>
+                    <span class="tm-title">Giáo viên Chuyên đề</span>
+                    <div style="font-size: 13.5px; color: #64748B; font-weight: 600; margin-top: 5px;">
+                        📝 Đã đóng góp: <b id="tmCount" style="color: #4F46E5;">0</b> bài
+                    </div>
+                </div>
+            </div>
+            <div class="tm-section">
+                <div class="tm-section-title">✏️ Giới thiệu bản thân</div>
+                <p id="tmBio" class="tm-text">Đang tải...</p>
+            </div>
+            <div class="tm-section" style="margin-bottom: 0;">
+                <div class="tm-section-title">🎓 Chuyên ngành & Kỹ năng</div>
+                <div id="tmTags" class="tm-tags"></div>
+            </div>
+            <div style="margin-top: 30px; text-align: center;">
+                <button id="btnJoinTeacher" class="btn" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 8px 18px -8px rgba(16, 185, 129, 0.4); font-size: 16px; padding: 14px 28px; border-radius: 16px; width: 100%;">
+                    🚀 Tham gia lớp học ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-teacher-room" class="glass-container home-container" style="display: none;">
+        <div class="list-section-header" style="margin-bottom: 30px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img id="trAvatar" src="" style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid #E2E8F0;">
+                <div>
+                    <h2 id="trName" style="margin-bottom: 2px; font-size: 22px;">---</h2>
+                    <span style="font-size: 13px; color: #64748B; font-weight: 600;">Lớp học chuyên đề</span>
+                </div>
+            </div>
+            <button class="btn-outline" style="padding: 8px 16px; width: auto; font-size: 13px; border-radius: 12px; margin:0;" onclick="showStep('step-room')">⬅ Trở về</button>
+        </div>
+        <div id="trFoldersContainer"></div>
+    </div>
+
+        <div class="modal-overlay" id="teacherModal">
+        <div class="modal-content">
+            <button class="btn-close-modal" onclick="closeTeacherModal()">✕</button>
+            <div class="tm-header">
+                <img id="tmAvatar" src="" class="tm-avatar" alt="Giáo viên">
+                <div style="flex: 1;">
+                    <h2 id="tmName" class="tm-name">---</h2>
+                    <span class="tm-title">Giáo viên Chuyên đề</span>
+                    <div style="font-size: 13.5px; color: #64748B; font-weight: 600; margin-top: 5px;">
+                        📝 Đã đóng góp: <b id="tmCount" style="color: #4F46E5;">0</b> bài
+                    </div>
+                </div>
+            </div>
+            <div class="tm-section">
+                <div class="tm-section-title">✏️ Giới thiệu bản thân</div>
+                <p id="tmBio" class="tm-text">Đang tải...</p>
+            </div>
+            <div class="tm-section" style="margin-bottom: 0;">
+                <div class="tm-section-title">🎓 Chuyên ngành & Kỹ năng</div>
+                <div id="tmTags" class="tm-tags"></div>
+            </div>
+            <div style="margin-top: 30px; text-align: center;">
+                <button id="btnJoinTeacher" class="btn" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 8px 18px -8px rgba(16, 185, 129, 0.4); font-size: 16px; padding: 14px 28px; border-radius: 16px; width: 100%;">
+                    🚀 Tham gia lớp học ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-teacher-room" class="glass-container home-container" style="display: none;">
+        <div class="list-section-header" style="margin-bottom: 30px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img id="trAvatar" src="" style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid #E2E8F0;">
+                <div>
+                    <h2 id="trName" style="margin-bottom: 2px; font-size: 22px;">---</h2>
+                    <span style="font-size: 13px; color: #64748B; font-weight: 600;">Lớp học chuyên đề</span>
+                </div>
+            </div>
+            <button class="btn-outline" style="padding: 8px 16px; width: auto; font-size: 13px; border-radius: 12px; margin:0;" onclick="showStep('step-room')">⬅ Trở về</button>
+        </div>
+        <div id="trFoldersContainer"></div>
+    </div>
     </div>
     <div id="step-english-list" class="glass-container home-container" style="display: none;">
         <div class="list-section-header">
             <h2 id="englishListTitle">📚 Danh Sách Bài Tập</h2>
             <button class="btn-outline" style="padding: 8px 16px; width: auto; font-size: 13px; border-radius: 12px; margin:0;" onclick="showStep('step-room')">Quay lại</button>
         </div>
+        
+        <div id="teacherFilterContainer" style="margin-bottom: 20px; display: none;">
+            <select id="englishTeacherFilter" class="form-input" style="padding: 10px 18px; width: 100%; border-radius: 14px; font-size: 14.5px; cursor: pointer; color: #4F46E5; font-weight: 700; background: #EEF2FF; border-color: #C7D2FE;" onchange="filterEnglishByTeacher()">
+                <option value="all">🌟 Tất cả giáo viên</option>
+            </select>
+        </div>
+
         <div id="englishListContainer"></div>
     </div>
 
@@ -554,7 +828,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCuRHLzyXZJgL1xfQMIeyMlYc5YX0p5bmM",
@@ -619,7 +893,8 @@
     const allSteps = [
         'step-room', 'step-info', 'step-exam', 'step-result', 
         'step-review', 'step-english-list', 'step-vocab-play', 
-        'step-reading-play', 'step-writing-play', 'step-collo-play'
+        'step-reading-play', 'step-writing-play', 'step-collo-play',
+        'step-teacher-room'
     ];
 
     allSteps.forEach(id => {
@@ -643,8 +918,10 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
         window.fetchData = async function() {
-            const container = document.getElementById('foldersContainer');
-            container.innerHTML = '<p style="text-align: center; color: #94A3B8; font-weight:500;">Đang cập nhật dữ liệu...</p>';
+            // Đã sửa: Trỏ đúng vào vùng chứa lưới giáo viên
+            const container = document.getElementById('teachersGridContainer');
+            if(container) container.innerHTML = '<p style="text-align: center; color: #94A3B8; font-weight:500; grid-column: 1 / -1;">Đang cập nhật dữ liệu...</p>';
+            
             try {
                 const fSnap = await getDocs(collection(db, "folders"));
                 globalFolders = {};
@@ -655,46 +932,137 @@
                 globalExams = [];
                 eSnap.forEach(doc => { 
                     const data = doc.data();
-                    // BỘ LỌC QUAN TRỌNG: Ẩn các bài Tiếng Anh khỏi trang chủ để không bị lỗi trắng trang
-                if (data.type !== 'vocab' && data.type !== 'reading' && data.type !== 'writing' && data.type !== 'collocation') {
-                    globalExams.push({ id: doc.id, ...data }); 
-                }
+                    // Bộ lọc Ngoại ngữ
+                    if (data.type !== 'vocab' && data.type !== 'reading' && data.type !== 'writing' && data.type !== 'collocation') {
+                        globalExams.push({ id: doc.id, ...data }); 
+                    }
                 });
                 globalExams.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
 
-                renderFoldersUI();
+                // Đã sửa: Gọi đúng hàm vẽ Giáo viên thay vì gọi hàm Folder cũ
+                renderTeachersGrid();
             } catch (error) { 
-                container.innerHTML = '<p style="text-align: center; color: #EF4444; font-weight:600;">Lỗi kết nối hoặc chưa có bài thi nào công khai!</p>'; 
+                console.error(error); // Báo lỗi ra console để dễ check
+                if(container) container.innerHTML = '<p style="text-align: center; color: #EF4444; font-weight:600; grid-column: 1 / -1;">Lỗi kết nối hoặc chưa có bài thi nào công khai!</p>'; 
             }
         }
-
-        function renderFoldersUI() {
-            const container = document.getElementById('foldersContainer');
+        // ==========================================
+        // CÁC HÀM XỬ LÝ HỆ THỐNG GIÁO VIÊN
+        // ==========================================
+        
+        window.renderTeachersGrid = function() {
+            const container = document.getElementById('teachersGridContainer');
             if (globalExams.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #94A3B8; font-weight:500;">Chưa có bài thi nào được mở công khai.</p>';
+                container.innerHTML = '<p style="text-align: center; color: #94A3B8; font-weight:500; grid-column: 1 / -1;">Chưa có bài thi nào được mở công khai.</p>';
                 return;
             }
 
-            let groupedExams = {};
+            let teacherMap = {}; 
             globalExams.forEach(ex => {
+                let tid = ex.teacherId || 'admin';
+                let tname = ex.teacherName || 'Admin';
+                if (!teacherMap[tid]) teacherMap[tid] = { id: tid, name: tname, count: 0 };
+                teacherMap[tid].count++;
+            });
+
+            container.innerHTML = '';
+            for (let tid in teacherMap) {
+                let t = teacherMap[tid];
+                let avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=random&color=fff&size=128&bold=true`;
+                let encodedName = encodeURIComponent(t.name);
+
+                container.innerHTML += `
+                    <div class="teacher-card" onclick="openTeacherModal('${tid}', '${encodedName}', '${avatarUrl}', ${t.count})">
+                        <img src="${avatarUrl}" class="teacher-avatar-img">
+                        <div class="teacher-name-txt">${t.name}</div>
+                        <div class="teacher-badge-txt">${t.count} bài</div>
+                    </div>
+                `;
+            }
+        };
+
+        // 2. Mở Popup thông tin Giáo viên (Dữ liệu thật từ Firebase)
+        window.openTeacherModal = async function(tid, encodedName, avatarUrl, totalCount) {
+            let tName = decodeURIComponent(encodedName);
+            
+            // Hiển thị tạm thông tin cơ bản trong lúc chờ tải
+            document.getElementById('tmAvatar').src = avatarUrl;
+            document.getElementById('tmName').innerText = tName;
+            document.getElementById('tmCount').innerText = totalCount;
+            document.getElementById('tmBio').innerText = "Đang tải giới thiệu...";
+            document.getElementById('tmTags').innerHTML = '';
+
+            // HIỂN THỊ POPUP NGAY (Để tạo cảm giác nhanh)
+            document.getElementById('teacherModal').classList.add('active');
+
+            try {
+                // TRUY VẤN DỮ LIỆU THẬT TỪ BẢNG USERS
+                const userRef = doc(db, "users", tid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const data = userSnap.data();
+                    
+                    // 1. Cập nhật Avatar (Ưu tiên ảnh giáo viên tự đăng, không có thì dùng mặc định)
+                    if (data.avatar && data.avatar.trim() !== "") {
+                        document.getElementById('tmAvatar').src = data.avatar;
+                    }
+
+                    // 2. Cập nhật Bio (Giới thiệu)
+                    document.getElementById('tmBio').innerText = data.bio || `Chào các em, tôi là ${tName}. Chúc các em học tập thật tốt trên hệ thống!`;
+
+                    // 3. Cập nhật Tags (Chuyên ngành)
+                    const tagsContainer = document.getElementById('tmTags');
+                    tagsContainer.innerHTML = '';
+                    if (data.tags && data.tags.length > 0) {
+                        data.tags.forEach(tag => {
+                            tagsContainer.innerHTML += `<span class="tm-tag">${tag}</span>`;
+                        });
+                    } else {
+                        // Nếu chưa có tag thì hiện mặc định cho đẹp
+                        ['Giáo viên', 'Nhiệt huyết'].forEach(tag => {
+                            tagsContainer.innerHTML += `<span class="tm-tag">${tag}</span>`;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Lỗi tải profile giáo viên:", error);
+            }
+            
+            // Gắn sự kiện cho nút Tham gia (Giữ nguyên logic cũ của Nhật)
+            document.getElementById('btnJoinTeacher').onclick = function() {
+                joinTeacherRoom(tid, encodedName, avatarUrl);
+            };
+        };
+        window.closeTeacherModal = function() { document.getElementById('teacherModal').classList.remove('active'); };
+
+        window.joinTeacherRoom = function(tid, encodedName, avatarUrl) {
+            closeTeacherModal(); 
+            let tName = decodeURIComponent(encodedName);
+            document.getElementById('trAvatar').src = avatarUrl;
+            document.getElementById('trName').innerText = `Lớp Của ${tName}`;
+
+            let tExams = globalExams.filter(ex => (ex.teacherId || 'admin') === tid);
+            const container = document.getElementById('trFoldersContainer');
+            container.innerHTML = '';
+
+            let groupedExams = {};
+            tExams.forEach(ex => {
                 let fId = ex.folderId || 'unassigned';
                 if (!groupedExams[fId]) groupedExams[fId] = [];
                 groupedExams[fId].push(ex);
             });
 
-            container.innerHTML = '';
             for (const [folderId, examsInFolder] of Object.entries(groupedExams)) {
                 const folderName = globalFolders[folderId] || 'Chưa phân loại';
-                const teacherName = examsInFolder[0].teacherName || 'Admin';
-                
                 let examsHtml = '';
+                
                 examsInFolder.forEach(exam => {
                     const examDataStr = encodeURIComponent(JSON.stringify(exam));
                     examsHtml += `
                         <div class="exam-card-large">
                             <h3>${exam.title}</h3>
                             <div class="exam-meta-lg">
-                                👨‍🏫 GV: <b>${exam.teacherName || 'Admin'}</b><br>
                                 ⏱ Thời gian: <b>${exam.timeLimit} phút</b><br>
                                 📝 Số câu: <b>${exam.questions ? exam.questions.length : 0} câu</b><br>
                                 ${exam.type === 'pdf' ? '<span style="display:inline-block; margin-top:5px; background:#EDE9FE; color:#6D28D9; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:700;">📄 Đề PDF</span>' : ''}
@@ -704,13 +1072,9 @@
                 });
 
                 container.innerHTML += `
-                    <div class="folder-card" id="folder_${folderId}">
-                        <div class="folder-header" onclick="toggleFolder('folder_${folderId}')">
-                            <div class="folder-title">
-                                📁 ${folderName} 
-                                <span style="font-size: 14px; color: #64748B; font-weight: 500; margin-left: 5px;">(GV: ${teacherName})</span>
-                                <span class="folder-count" style="margin-left: 10px;">${examsInFolder.length} bài</span>
-                            </div>
+                    <div class="folder-card open" id="tr_folder_${folderId}">
+                        <div class="folder-header" onclick="toggleFolder('tr_folder_${folderId}')">
+                            <div class="folder-title">📁 ${folderName} <span class="folder-count" style="margin-left: 10px;">${examsInFolder.length} bài</span></div>
                             <div class="folder-icon">▼</div>
                         </div>
                         <div class="folder-content">
@@ -718,9 +1082,11 @@
                         </div>
                     </div>`;
             }
-        }
-        window.toggleFolder = function(id) { document.getElementById(id).classList.toggle('open'); }
 
+            showStep('step-teacher-room');
+        };
+
+        window.toggleFolder = function(id) { document.getElementById(id).classList.toggle('open'); };
         window.joinExamDirectly = function(encodedExamData) {
             currentExam = JSON.parse(decodeURIComponent(encodedExamData));
             document.getElementById('examTitleDisplay').innerText = currentExam.title;
@@ -1224,7 +1590,7 @@
 
         document.getElementById('btnBackToResult').addEventListener('click', () => { showStep('step-result'); });
         // Chống click chuột phải và F12 để hạn chế học sinh xem mã nguồn (Không hiệu quả 100% nhưng có thể giảm bớt hành vi gian lận)
-        document.addEventListener('contextmenu', event => event.preventDefault());
+        // document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) return false; };
         // =============================================== new ===============================================
 
@@ -1247,70 +1613,54 @@
         let currentVocabIndex = 0;
 
         // 2. Mở danh sách các bài tập Tiếng Anh khi bấm vào Giọt Nước
-        // Hàm hỗ trợ: Lấy ngày hiện tại (để sang ngày mới tự reset tiến độ)
+       // Hàm hỗ trợ: Lấy ngày hiện tại
         function getTodayString() { return new Date().toLocaleDateString('vi-VN'); }
 
-        // 2. Mở danh sách bài tập Tiếng Anh kèm Thanh Tiến Độ
+        // 1. Biến toàn cục lưu loại kỹ năng đang học
+        window.currentEnglishSkillType = '';
+
+        // 2. Mở danh sách và nạp dữ liệu Giáo viên vào Dropdown
         window.openEnglishSkill = async function(skillType, title) {
             Swal.fire({ title: 'Đang tải dữ liệu...', didOpen: () => Swal.showLoading() });
             try {
                 const q = query(collection(db, "exams"), where("type", "==", skillType), where("status", "==", "active"), where("visibility", "==", "public"));
                 const snap = await getDocs(q);
                 
-                const listContainer = document.getElementById('englishListContainer');
                 document.getElementById('englishListTitle').innerText = title;
-                listContainer.innerHTML = '';
+                window.currentEnglishSkillType = skillType;
+
+                const listContainer = document.getElementById('englishListContainer');
+                const filterContainer = document.getElementById('teacherFilterContainer');
+                const filterSelect = document.getElementById('englishTeacherFilter');
 
                 if (snap.empty) {
                     listContainer.innerHTML = '<p style="text-align:center; color:#94A3B8; font-weight:500;">Giáo viên chưa tạo bài tập nào cho mục này.</p>';
+                    if(filterContainer) filterContainer.style.display = 'none';
                 } else {
                     window.tempEnglishExams = [];
-                    snap.forEach(doc => window.tempEnglishExams.push({id: doc.id, ...doc.data()}));
-
-                    // Đọc tiến độ học tập từ thiết bị
-                    let progressData = JSON.parse(localStorage.getItem('english_progress') || '{}');
-                    let today = getTodayString();
-
-                    window.tempEnglishExams.forEach((ex, idx) => {
-                        let icon = skillType === 'vocab' ? '📚' : (skillType === 'reading' ? '👁️‍🗨️' : (skillType === 'writing' ? '✍️' : '🧩'));
-                        
-                        // Lấy data tiến độ của bài này
-                        let lessonProg = progressData[ex.id] || { attempts: 0, lastCompleted: 0, date: today };
-                        // Nếu qua ngày mới -> Reset lại 0
-                        if (lessonProg.date !== today) lessonProg = { attempts: 0, lastCompleted: 0, date: today };
-
-                        let statusText = 'Mục tiêu: 2 lần/ngày';
-                        let barClass = '';
-                        let lockStyle = '';
-
-                        if (lessonProg.attempts >= 2) {
-                            statusText = '✅ Đã đủ chỉ tiêu (Học tự do)';
-                            barClass = 'progress-100';
-                        } else if (lessonProg.attempts === 1) {
-                            let timePassed = Date.now() - lessonProg.lastCompleted;
-                            if (timePassed < 15 * 60 * 1000) {
-                                statusText = '⏳ Đang khóa nghỉ ngơi 15p...';
-                                lockStyle = 'opacity: 0.7;'; // Làm mờ thẻ bài
-                            } else {
-                                statusText = '🔥 Đã mở khóa Lần 2!';
-                            }
-                            barClass = 'progress-50';
-                        }
-
-                        listContainer.innerHTML += `
-                            <div class="exam-card-large" style="margin-bottom: 15px; cursor: pointer; border-left: 4px solid #F59E0B; background: #FFFBEB; ${lockStyle}" onclick="startEnglishSession('${skillType}', ${idx})">
-                                <h3 style="color: #D97706; margin-bottom: 5px;">${icon} ${ex.title}</h3>
-                                <div style="font-size: 14px; color: #B45309; font-weight: 600; margin-bottom: 10px;">Số lượng: ${ex.questions ? ex.questions.length : 0} mục</div>
-                                
-                                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #B45309; font-weight: 700; margin-bottom: 4px;">
-                                    <span>${statusText}</span>
-                                </div>
-                                <div class="progress-container">
-                                    <div class="progress-bar ${barClass}" style="width: ${lessonProg.attempts >= 2 ? '100%' : (lessonProg.attempts == 1 ? '50%' : '0%')};"></div>
-                                </div>
-                            </div>
-                        `;
+                    let teachers = {}; 
+                    
+                    // Quét data và gom tên giáo viên
+                    snap.forEach(doc => {
+                        let data = doc.data();
+                        window.tempEnglishExams.push({id: doc.id, ...data});
+                        let tid = data.teacherId || 'admin';
+                        let tname = data.teacherName || 'Admin';
+                        teachers[tid] = tname;
                     });
+
+                    // Cập nhật lựa chọn vào thẻ Dropdown
+                    if (filterSelect) {
+                        filterSelect.innerHTML = '<option value="all">🌟 Tất cả giáo viên</option>';
+                        for (let tid in teachers) {
+                            filterSelect.innerHTML += `<option value="${tid}">👨‍🏫 GV: ${teachers[tid]}</option>`;
+                        }
+                        filterContainer.style.display = 'block';
+                        filterSelect.value = 'all'; // Mặc định hiển thị tất cả
+                    }
+
+                    // Gọi hàm vẽ giao diện danh sách
+                    renderEnglishList('all');
                 }
                 
                 Swal.close();
@@ -1320,6 +1670,72 @@
                 setTimeout(() => { target.style.opacity = '1'; target.style.transform = 'translateY(0)'; }, 30);
 
             } catch (e) { Swal.fire('Lỗi', e.message, 'error'); }
+        };
+
+        // 3. Hàm kích hoạt khi người dùng thay đổi Dropdown
+        window.filterEnglishByTeacher = function() {
+            const selectedTeacherId = document.getElementById('englishTeacherFilter').value;
+            renderEnglishList(selectedTeacherId);
+        };
+
+        // 4. Hàm vẽ giao diện bài tập (Có xử lý thanh tiến độ)
+        window.renderEnglishList = function(filterTeacherId) {
+            const listContainer = document.getElementById('englishListContainer');
+            listContainer.innerHTML = '';
+            
+            let progressData = JSON.parse(localStorage.getItem('english_progress') || '{}');
+            let today = getTodayString();
+            let skillType = window.currentEnglishSkillType;
+
+            // BỘ LỌC
+            let filteredExams = window.tempEnglishExams;
+            if (filterTeacherId !== 'all') {
+                filteredExams = filteredExams.filter(ex => (ex.teacherId || 'admin') === filterTeacherId);
+            }
+
+            if (filteredExams.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#94A3B8; font-weight:500;">Không có bài tập nào của giáo viên này.</p>';
+                return;
+            }
+
+            // VẼ THẺ
+            filteredExams.forEach((ex) => {
+                // Phải lấy index gốc để click không bị nhầm bài
+                let originalIndex = window.tempEnglishExams.findIndex(item => item.id === ex.id);
+                let icon = skillType === 'vocab' ? '📚' : (skillType === 'reading' ? '👁️‍🗨️' : (skillType === 'writing' ? '✍️' : '🧩'));
+                
+                let lessonProg = progressData[ex.id] || { attempts: 0, lastCompleted: 0, date: today };
+                if (lessonProg.date !== today) lessonProg = { attempts: 0, lastCompleted: 0, date: today };
+
+                let statusText = 'Mục tiêu: 2 lần/ngày';
+                let barClass = ''; let lockStyle = '';
+
+                if (lessonProg.attempts >= 2) {
+                    statusText = '✅ Đã đủ chỉ tiêu (Học tự do)'; barClass = 'progress-100';
+                } else if (lessonProg.attempts === 1) {
+                    let timePassed = Date.now() - lessonProg.lastCompleted;
+                    if (timePassed < 15 * 60 * 1000) {
+                        statusText = '⏳ Đang khóa nghỉ ngơi 15p...'; lockStyle = 'opacity: 0.7;'; 
+                    } else { statusText = '🔥 Đã mở khóa Lần 2!'; }
+                    barClass = 'progress-50';
+                }
+
+                listContainer.innerHTML += `
+                    <div class="exam-card-large" style="margin-bottom: 15px; cursor: pointer; border-left: 4px solid #F59E0B; background: #FFFBEB; ${lockStyle}" onclick="startEnglishSession('${skillType}', ${originalIndex})">
+                        <h3 style="color: #D97706; margin-bottom: 5px;">${icon} ${ex.title}</h3>
+                        
+                        <div style="font-size: 13px; color: #92400E; margin-bottom: 8px;">👨‍🏫 GV: <b>${ex.teacherName || 'Admin'}</b></div>
+                        
+                        <div style="font-size: 14px; color: #B45309; font-weight: 600; margin-bottom: 10px;">Số lượng: ${ex.questions ? ex.questions.length : 0} mục</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #B45309; font-weight: 700; margin-bottom: 4px;">
+                            <span>${statusText}</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar ${barClass}" style="width: ${lessonProg.attempts >= 2 ? '100%' : (lessonProg.attempts == 1 ? '50%' : '0%')};"></div>
+                        </div>
+                    </div>
+                `;
+            });
         };
 
         // 3. Xử lý logic Click (Khóa hoặc Cho phép học)
