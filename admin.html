@@ -245,14 +245,20 @@
         .dropdown-item:hover { background: #F1F5F9; color: #1E293B; }
         .dropdown-item.active { background: #EEF2FF; color: #4F46E5; }
 
+
+
+            
         
     </style>
 </head>
 <body>
 
-    <div class="navbar" id="mainNavbar" style="display:none;">
+<div class="navbar" id="mainNavbar" style="display:none;">
         <div class="user-info" id="displayAdminName">Đang tải dữ liệu...</div>
-        <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-back" style="margin: 0; background: #EEF2FF; color: #4F46E5; border: 1px solid #C7D2FE;" onclick="openProfileModal()">👤 Cài Đặt Hồ Sơ</button>
+            <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+        </div>
     </div>
 
     <div class="admin-container" id="mainAdminContainer" style="display:none;">
@@ -591,11 +597,40 @@
     </div>
     
 
-    
+    <!-- ==============================new -->
+
+    <div id="profileModal" class="modal-overlay" style="z-index: 10000;">
+        <div class="modal-content" style="max-width: 500px; padding: 30px; border-radius: 20px; text-align: left;">
+            <button class="btn-close-modal" onclick="closeProfileModal()">✕</button>
+            <h2 style="color: #4F46E5; margin-bottom: 20px; text-align: center;">👤 Cài Đặt Hồ Sơ</h2>
+            
+            <div style="text-align: center; margin-bottom: 25px;">
+                <img id="previewAvatar" src="https://ui-avatars.com/api/?name=GV" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #EEF2FF; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: 600;">Link Ảnh Đại Diện (Avatar URL):</label>
+                <input type="text" id="profileAvatar" class="form-input" placeholder="Dán link ảnh (.jpg, .png) vào đây..." oninput="document.getElementById('previewAvatar').src = this.value || 'https://ui-avatars.com/api/?name=GV'">
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: 600;">Giới thiệu bản thân (Bio):</label>
+                <textarea id="profileBio" class="form-input" rows="4" placeholder="Ví dụ: Giáo viên chuyên Tiếng Anh ôn thi THPT Quốc gia..." style="min-height: 100px; border-radius: 12px; resize: none;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: 600;">Chuyên ngành & Kỹ năng:</label>
+                <input type="text" id="profileTags" class="form-input" placeholder="VD: Tiếng Anh THPT, IELTS, Giao tiếp (cách nhau bằng dấu phẩy)">
+            </div>
+
+            <button class="btn-create" onclick="saveProfile()" style="width: 100%; margin-top: 15px;">💾 Lưu Thông Tin</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, getDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, serverTimestamp, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCuRHLzyXZJgL1xfQMIeyMlYc5YX0p5bmM",
@@ -623,17 +658,29 @@
         // QUẢN LÝ THƯ MỤC
         // -----------------------------------------
         // QUẢN LÝ THƯ MỤC VÀ TỰ ĐỘNG TẠO BỘ LỌC
+        
+        // QUẢN LÝ THƯ MỤC VÀ TỰ ĐỘNG TẠO BỘ LỌC
         window.loadFolders = async function() {
             if (!currentUser) return;
             try {
-                const q = query(collection(db, "folders"), where("teacherId", "==", currentUser.uid));
+                // PHÂN LUỒNG TẠI ĐÂY: Nếu là Admin Tổng thì lấy hết, nếu là VIP thường thì chỉ lấy thư mục của mình
+                let q;
+                if (currentUserRole === 'admin') {
+                    q = query(collection(db, "folders")); // Lấy toàn bộ
+                } else {
+                    q = query(collection(db, "folders"), where("teacherId", "==", currentUser.uid)); // Lấy của cá nhân
+                }
+
                 const querySnapshot = await getDocs(q);
                 
                 const selectTextEl = document.getElementById('examFolderText');
                 const selectPdfEl = document.getElementById('examFolderPdf');
+                const selectVocabEl = document.getElementById('vocabFolder'); // Nạp cho cả Tiếng Anh
                 
                 selectTextEl.innerHTML = '<option value="">-- Chọn thư mục --</option>';
                 selectPdfEl.innerHTML = '<option value="">-- Chọn thư mục --</option>';
+                if(selectVocabEl) selectVocabEl.innerHTML = '<option value="english_zone">-- Góc Ngoại Ngữ (Mặc định) --</option>';
+
                 userFolders = {};
                 
                 querySnapshot.forEach((docSnap) => {
@@ -642,25 +689,21 @@
                     const optionHtml = `<option value="${docSnap.id}">${data.name}</option>`;
                     selectTextEl.innerHTML += optionHtml;
                     selectPdfEl.innerHTML += optionHtml;
+                    if(selectVocabEl) selectVocabEl.innerHTML += optionHtml;
                 });
 
-                // ========================================================
-                // NÂNG CẤP: TỰ ĐỘNG RÁP CÁC THƯ MỤC VÀO THẺ DROPDOWN LỌC
-                // ========================================================
+                // Cập nhật thẻ Dropdown bộ lọc...
                 const dropdownMenu = document.querySelector('.dropdown-menu');
                 if (dropdownMenu) {
-                    // Giữ lại 2 mục mặc định
                     let menuHtml = `
                         <div class="dropdown-item active" onclick="selectFilterOption('all', '🌟 Tất cả bài thi', this)">🌟 Tất cả bài thi</div>
                         <div class="dropdown-item" onclick="selectFilterOption('english_zone', '🇬🇧 Góc Ngoại Ngữ', this)">🇬🇧 Góc Ngoại Ngữ</div>
                     `;
-                    // Lặp qua các thư mục lấy từ Database để tạo nút bấm động
                     for (const [id, name] of Object.entries(userFolders)) {
                         menuHtml += `<div class="dropdown-item" onclick="selectFilterOption('${id}', '📁 ${name}', this)">📁 ${name}</div>`;
                     }
-                    dropdownMenu.innerHTML = menuHtml; // Đổ vào menu
+                    dropdownMenu.innerHTML = menuHtml;
                 }
-
             } catch (e) { console.error("Lỗi tải thư mục:", e); }
         }
         window.createNewFolder = async function() {
@@ -914,12 +957,22 @@
 
         window.loadExams = async function() {
             if (!currentUser) return;
-            const container = document.getElementById('examListContainer'); container.innerHTML = '<p>Đang tải dữ liệu...</p>';
+            const container = document.getElementById('examListContainer'); 
+            container.innerHTML = '<p>Đang tải dữ liệu...</p>';
             try {
                 if (Object.keys(userFolders).length === 0) await loadFolders();
-                const q = query(collection(db, "exams"), where("teacherId", "==", currentUser.uid));
+                
+                // PHÂN LUỒNG TẠI ĐÂY: Admin Tổng soi được tất cả bài của giáo viên khác
+                let q;
+                if (currentUserRole === 'admin') {
+                    q = query(collection(db, "exams")); 
+                } else {
+                    q = query(collection(db, "exams"), where("teacherId", "==", currentUser.uid));
+                }
+
                 const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) { container.innerHTML = '<p>Bạn chưa tạo bài thi nào.</p>'; return; }
+                if (querySnapshot.empty) { container.innerHTML = '<p>Chưa có bài thi nào được tạo.</p>'; return; }
+                
                 const exams = []; querySnapshot.forEach(doc => exams.push({ id: doc.id, ...doc.data() }));
                 exams.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
                 
@@ -936,22 +989,28 @@
                     
                     const statusBadge = isActive ? '<span class="badge badge-active">Đang mở</span>' : '<span class="badge badge-closed">Đã khóa</span>';
                     const visibilityBadge = isHidden ? '<span class="badge badge-hidden" style="margin-left:5px;">🙈 Đang Ẩn</span>' : '';
-                    // Phân loại nhãn hiển thị cho Đề Tiếng Anh
+                    
                     let typeBadge = '';
                     if (data.type === 'pdf') typeBadge = '<span class="badge badge-pdf">📄 Đề PDF</span>';
                     else if (data.type === 'vocab') typeBadge = '<span class="badge" style="background:#FEF08A; color:#854D0E; border:1px solid #FDE047; margin-left:5px;">📚 Từ Vựng</span>';
                     else if (data.type === 'reading') typeBadge = '<span class="badge" style="background:#E9D5FF; color:#6B21A8; border:1px solid #D8B4FE; margin-left:5px;">👁️‍🗨️ Đọc Hiểu</span>';
                     else if (data.type === 'writing') typeBadge = '<span class="badge" style="background:#FFEDD5; color:#C2410C; border:1px solid #FDBA74; margin-left:5px;">✍️ Viết</span>';
+                    else if (data.type === 'collocation') typeBadge = '<span class="badge" style="background:#BAE6FD; color:#0369A1; border:1px solid #7DD3FC; margin-left:5px;">🧩 Cụm Từ</span>';
                     else typeBadge = '<span class="badge" style="background:#E0F2FE; color:#0369A1; border:1px solid #BAE6FD; margin-left:5px;">✍️ Đề Text</span>';
 
-                    // Ẩn nút xem bảng điểm đối với Luyện Từ Vựng (Vì chỉ là học tập, không chấm điểm)
-                    const btnScoreHtml = (data.type === 'vocab') ? '' : `<button class="btn-sm btn-scores" onclick="viewScores('${data.id}', '${data.title.replace(/'/g, "\\'")}')">📊 Xem Bảng Điểm</button>`;
-                    // Đóng gói data để đẩy vào hàm Edit
+                    // HIỂN THỊ TÊN NGƯỜI TẠO NẾU ĐÂY LÀ ADMIN TỔNG ĐANG XEM
+                    let creatorInfo = '';
+                    if (currentUserRole === 'admin') {
+                        creatorInfo = `<div style="font-size: 13px; color: #D97706; font-weight: 700; margin-bottom: 5px;">👨‍🏫 Người tạo: ${data.teacherName || 'Không rõ'}</div>`;
+                    }
+
+                    const btnScoreHtml = (data.type === 'vocab' || data.type === 'collocation') ? '' : `<button class="btn-sm btn-scores" onclick="viewScores('${data.id}', '${data.title.replace(/'/g, "\\'")}')">📊 Xem Bảng Điểm</button>`;
                     const examDataEncoded = encodeURIComponent(JSON.stringify(data));
 
                     container.innerHTML += `
                        <div class="exam-card admin-exam-item" data-folder="${data.folderId}">
                             <h3>${data.title}</h3>
+                            ${creatorInfo}
                             <div><span class="folder-tag">📁 ${folderName}</span></div>
                             <div class="room-code" style="${isPdf ? 'color: #10B981; border-color: #A7F3D0; background: #ECFDF5;' : ''}">${data.roomCode}</div>
                             <div class="exam-info">
@@ -960,7 +1019,7 @@
                                 🟢 Trạng thái: ${statusBadge} ${visibilityBadge} ${typeBadge}
                             </div>
                             <div class="card-actions">
-                                <button class="btn-sm btn-scores" onclick="viewScores('${data.id}', '${data.title.replace(/'/g, "\\'")}')">📊 Xem Bảng Điểm</button>
+                                ${btnScoreHtml}
                                 <div class="btn-group-sm">${toggleStatusBtn} ${toggleVisibilityBtn}</div>
                                 <div class="btn-group-sm">
                                     <button class="btn-sm btn-edit" onclick="openEditModal('${examDataEncoded}')">✏️ Sửa</button>
@@ -972,7 +1031,6 @@
                 });
             } catch (error) { container.innerHTML = '<p style="color:red">Gặp lỗi tải dữ liệu.</p>'; console.error(error);}
         }
-
         window.updateExamField = async function(examId, field, newValue) {
             Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
             try { 
@@ -1491,6 +1549,72 @@
                 wrapper.classList.remove('active');
             }
         });
+
+
+        // ==========================================
+        // LOGIC CÀI ĐẶT HỒ SƠ GIÁO VIÊN
+        // ==========================================
+        window.openProfileModal = async function() {
+            if (!currentUser) return;
+            Swal.fire({ title: 'Đang tải thông tin...', didOpen: () => Swal.showLoading() });
+            try {
+                // Kéo dữ liệu từ collection 'users'
+                const docRef = doc(db, "users", currentUser.uid);
+                const docSnap = await getDoc(docRef);
+                
+                let defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'GV')}&background=random&color=fff&size=128&bold=true`;
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('profileAvatar').value = data.avatar || '';
+                    document.getElementById('profileBio').value = data.bio || '';
+                    document.getElementById('profileTags').value = data.tags ? data.tags.join(', ') : '';
+                    document.getElementById('previewAvatar').src = data.avatar || defaultAvatar;
+                } else {
+                    document.getElementById('profileAvatar').value = '';
+                    document.getElementById('profileBio').value = '';
+                    document.getElementById('profileTags').value = '';
+                    document.getElementById('previewAvatar').src = defaultAvatar;
+                }
+                
+                Swal.close();
+                document.getElementById('profileModal').classList.add('active');
+            } catch (error) {
+                Swal.fire('Lỗi', 'Không thể tải thông tin: ' + error.message, 'error');
+            }
+        };
+
+        window.closeProfileModal = function() {
+            document.getElementById('profileModal').classList.remove('active');
+        };
+
+        window.saveProfile = async function() {
+            if (!currentUser) return;
+            const avatar = document.getElementById('profileAvatar').value.trim();
+            const bio = document.getElementById('profileBio').value.trim();
+            const tagsStr = document.getElementById('profileTags').value.trim();
+            
+            // Cắt chuỗi thẻ Tag theo dấu phẩy và xóa khoảng trắng dư thừa
+            const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t !== '') : [];
+
+            Swal.fire({ title: 'Đang lưu...', didOpen: () => Swal.showLoading() });
+            try {
+                // Lưu lên Firebase vào document của User (Dùng merge để không làm mất role vip)
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    displayName: currentUser.displayName,
+                    email: currentUser.email,
+                    avatar: avatar,
+                    bio: bio,
+                    tags: tags,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+                
+                Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đã cập nhật hồ sơ!', timer: 1500, showConfirmButton: false });
+                closeProfileModal();
+            } catch (error) {
+                Swal.fire('Lỗi', error.message, 'error');
+            }
+        };
     </script>
 </body>
 </html>
